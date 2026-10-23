@@ -230,6 +230,7 @@ button { cursor: pointer; }
     <div class="meters">
       <span id="streak" class="pill" title="أيام لعب ورا بعض">🔥 0</span>
       <span id="lights" class="pill gold" title="لمبات: بتكسبها لما تلاقي ثغرة، وكل لمبة بتفتح تلميح">💡 0</span>
+      <button id="lang" class="pill" type="button" aria-label="Language">EN</button>
       <button id="snd" class="pill" type="button" aria-label="الصوت">🔊</button>
     </div>
   </header>
@@ -264,27 +265,39 @@ button { cursor: pointer; }
 <script>
 "use strict";
 //ENGINE-START
+var LANG = (function () {
+  try {
+    var q = (location.search.match(/[?&]lang=(en|ar)/) || [])[1];
+    if (q) { try { localStorage.setItem("glitchrun_lang", q); } catch (e) {} return q; }
+    var v = localStorage.getItem("glitchrun_lang"); if (v === "en" || v === "ar") return v;
+  } catch (e) {}
+  return "ar";
+})();
+var RTL = LANG !== "en";
+var EN = {"الغرفة المقفلة": "The Locked Room", "اطلع برا بأقل عدد حركات.": "Get out in as few moves as you can.", "أنت بغرفة مقفلة. على الطاولة مفتاح، وجنب الباب حارس نايم.": "You're in a locked room. There's a key on the table and a guard asleep by the door.", "الطريق العادي: مفتاح، باب، طلوع. بس فتح الباب بيعمل صوت.": "The usual way: key, door, exit. But opening the door makes noise.", "مو كل حيط حيط...": "Not every wall is just a wall...", "لو كنت مكان الحارس، مين بيفتح الباب؟": "If you were the guard, who would open the door?", "في طريقة أخيرة بتاخد حركات كتير: الهروب بالنوم.": "There's one last way that costs a lot of moves: escaping through sleep.", "حيلة الحيط": "The Wall Trick", "الحيط صار باب ومشيت منه.": "The wall became a door and you walked through it.", "حيلة الحارس": "The Guard Trick", "الحارس صدّق إنك الحارس، فتح لك وطلعت.": "The guard believed you were the guard, opened up, and you left.", "حيلة الحلم": "The Dream Trick", "نمت وصحيت برا الغرفة.": "You fell asleep and woke up outside the room.", "مدّيت إيدك عالطاولة ولقطت المفتاح البارد.": "You reached over the table and picked up the cold key.", "حطيت المفتاح بالقفل وحاولت تلفّه.": "You put the key in the lock and tried to turn it.", "خطيت خطوتك الكبيرة باتجاه الباب.": "You took your big step toward the door.", "مشيت على أطراف أصابعك متل القطة.": "You crept on tiptoe like a cat.", "رفعت إيدك وهجمت على الحارس.": "You raised your hand and lunged at the guard.", "دورت بعيونك عالغرفة.": "You scanned the room with your eyes.", "وقفت قدام الحيط وحكيت له بكل ثقة إنه باب.": "You stood before the wall and told it, very confidently, that it was a door.", "قربت من الحارس وهمست له إنك إنت الحارس هون.": "You leaned toward the guard and whispered that you are the guard here.", "غمضت عيونك وسلّمت حالك للنوم.": "You closed your eyes and gave yourself to sleep.", "حكيت شي غريب… الغرفة عملت حالها مش سامعة.": "You said something strange... the room pretended not to hear.", "المفتاح معك أصلاً. حركة ضايعة.": "You already have the key. Wasted move.", "صار المفتاح معك.": "You have the key now.", "الباب مقفل. بدك مفتاح.": "The door is locked. You need a key.", "الباب مفتوح أصلاً.": "The door is already open.", "انفتح الباب، بس الصوت صحّى الحارس.": "The door opened, but the noise woke the guard.", "انفتح الباب بهدوء، والحارس لسا نايم.": "The door opened quietly, and the guard is still asleep.", "الحارس صاحي. التسلل ما عاد بيفيد.": "The guard is awake. Sneaking won't help now.", "صرت تمشي بهدوء. الحارس ما رح يصحى من صوت الباب.": "You're moving quietly now. The door won't wake the guard.", "الحارس صحي وعطاك كف محترم. راح قلب 💔": "The guard woke up and gave you a proper slap. You lost a heart 💔", "الباب مغلق. ما فيك تطلع.": "The door is shut. You can't get out.", "طلعت، بس الحارس خدشك. خسرت قلب وحركتين.": "You got out, but the guard scratched you. You lost a heart and two moves.", "طلعت من الغرفة بهدوء.": "You slipped out of the room quietly.", "غرفة، باب ": "Room, door ", "مفتوح": "open", "مقفل": "locked", "، ": ", ", "المفتاح معك": "you have the key", "مفتاح على الطاولة": "key on the table", "، حارس ": ", guard ", "نايم": "asleep", "صاحي": "awake", "طابور الفرن": "The Bread Line", "جيب ربطة خبز قبل ما يخلص.": "Get a bundle of bread before it runs out.", "أنت بطابور الفرن والخبز عم يخلص. قدامك 3 ناس، وجارك أبو خليل واقف بالأول.": "You're in the bakery line and the bread is running out. Three people stand ahead of you, and your neighbour Abu Khalil is at the front.", "الطريق العادي: انتظر دورك وبعدها اشتري.": "The usual way: wait your turn, then buy.", "جارك أبو خليل واقف بالأول. ممكن يساعدك.": "Your neighbour Abu Khalil is at the front. He might help you.", "الناس بتحن على المحتاج. ومين بيعرف الخباز؟": "People soften toward someone in need. And who knows the baker?", "حيلة ابن العم": "The Cousin Trick", "الخباز صدّق إنك ابن عمه وطلّع لك الربطة من الباب الخلفي.": "The baker believed you were his cousin and brought you a bundle out the back door.", "حيلة المحتاج": "The Sob Story Trick", "الناس حنّت عليك ووسّعوا لك الطريق للشباك.": "The people took pity on you and made way to the window.", "حيلة العجين": "The Dough Trick", "عجنت وخبزت على صاجية، وطلعت بخبز أحلى من الفرن.": "You kneaded and baked on a griddle, and got better bread than the bakery's.", "وقفت بالطابور وعدّلت وقفتك.": "You stood in line and straightened up.", "ناديت جارك أبو خليل بصوت واطي.": "You called your neighbour Abu Khalil in a low voice.", "اندسّيت بين الناس لقدام.": "You squeezed through the crowd toward the front.", "وصلت للشباك ومدّيت عملتك.": "You reached the window and held out your money.", "تطلعت عالطابور الطويل.": "You looked along the long line.", "قربت من الشباك وهمست للخباز إنك ابن عمه.": "You leaned to the window and whispered to the baker that you're his cousin.", "نزّلت صوتك وبلشت تحكي عن ولادك الجوعانين.": "You lowered your voice and started talking about your hungry kids.", "طلعت من الطابور وبلشت تعجن بإيديك.": "You stepped out of the line and started kneading with your hands.", "حكيت شي غريب، والطابور تطلّع فيك.": "You said something odd, and the whole line stared at you.", "إقناع الطابور": "Persuading the Line", "وصل دورك أصلاً.": "It's already your turn.", "ثغرة! إقناع الطابور: كلامك حنّن قلوبهم ووسّعوا لك. (انرقّعت للجولة الجاية)": "Glitch! Persuading the line: your words softened their hearts and they made room. (patched for next round)", "الشراء من الطابور": "Buying From the Line", "الربطة معك أصلاً.": "You already have the bread.", "ثغرة! الشراء من الطابور: دفعتله زيادة وأخدت ربطته سخنة. (انرقّعت للجولة الجاية)": "Glitch! Buying from the line: you paid extra and took his warm bundle. (patched for next round)", "خدمة مقابل دور": "Favour for a Spot", "ثغرة! خدمة مقابل دور: ساعدت واحد وبدّلك مكانه. (انرقّعت للجولة الجاية)": "Glitch! Favour for a spot: you helped someone and he swapped places with you. (patched for next round)", "وصل دورك. اشتري!": "It's your turn. Buy!", "تقدمت بالطابور. باقي ": "You moved up the line. ", " قدامك.": " left ahead of you.", "وصلت للشباك.": "You reached the window.", "أبو خليل: خلص ما فيني أعمل أكتر.": "Abu Khalil: that's it, I can't do any more for you.", "أبو خليل أخدك لقدام. باقي ": "Abu Khalil took you forward. ", "الطابور كله صرخ عليك وردّوك لورا. خسرت قلب.": "The whole line shouted at you and pushed you back. You lost a heart.", "لسا في ": "There are still ", " ناس قدامك.": " people ahead of you.", "اشتريت الربطة وهي سخنة!": "You bought the bundle, still warm!", "قدامك ": "Ahead of you: ", " ناس، وجارك أبو خليل ": " people, and your neighbour Abu Khalil ", "ساعدك": "already helped you", "واقف بالأول": "is at the front", "القصر": "The Palace", "خلّي الملك يعفو عنك.": "Make the king pardon you.", "أنت سجين قدام ملك عابس. بإيدك خاتم ذهب، والملك عينه عليه.": "You're a prisoner before a scowling king. You hold a gold ring, and the king has his eye on it.", "المجاملة الأولى بتفيد، والتانية لأ. وفي شي بإيدك الملك بيحبه.": "The first compliment works, the second doesn't. And there's something in your hand the king likes.", "مزاج الملك لازم يوصل لـ3 قبل ما تطلب العفو.": "The king's mood must reach 3 before you ask for a pardon.", "ملك ما عنده أهل... أو خايف على صحته؟": "A king with no family... or one who fears for his health?", "حيلة التوأم": "The Twin Trick", "الملك بكى: أخي! وعفا عنك فوراً.": "The king wept: my brother! And pardoned you at once.", "حيلة الطبيب": "The Doctor Trick", "الملك خاف على صحته وعفا عنك مقابل علاج وهمي.": "The king feared for his health and pardoned you in return for a fake cure.", "انحنيت وبلشت تمدح عظمة الملك.": "You bowed and began praising the king's greatness.", "حبّيت تضحك الملك وحكيت نكتة.": "You tried to make the king laugh and told a joke.", "مدّيت الخاتم للملك بإيدين مرتجفة.": "You held the ring out to the king with trembling hands.", "رفعت صوتك وهددت الملك.": "You raised your voice and threatened the king.", "ركعت وطلبت العفو.": "You knelt and begged for a pardon.", "تأمّلت وجه الملك.": "You studied the king's face.", "قربت من الملك وقلت له إنك أخوه التوأم الضايع.": "You stepped up to the king and told him you're his lost twin brother.", "تطلعت بوجه الملك بقلق وقلت له إنه مريض.": "You looked at the king with worry and told him he's ill.", "حكيت شي غريب، والملك مال راسه.": "You said something strange, and the king tilted his head.", "الملك ابتسم قليلاً.": "The king smiled a little.", "الملك: المجاملة الأولى حلوة، التانية سخيفة.": "King: the first compliment was sweet, the second is silly.", "الملك ضحك رغماً عنه.": "The king laughed in spite of himself.", "الملك: النكتة المعادة بتموّت.": "King: a repeated joke is a dead joke.", "ما بقى معك خاتم.": "You don't have the ring anymore.", "لمعت عيون الملك بالخاتم.": "The king's eyes lit up at the ring.", "الملك عصّب. خسرت فرصة.": "The king got angry. You lost a chance.", "الملك وقّع العفو.": "The king signed the pardon.", "الملك رفض وعصّب. خسرت فرصة.": "The king refused and raged. You lost a chance.", "الملك ": "The king is ", "مزاجه صار أحسن بكتير": "in a much better mood", "مزاجه بدأ يتحسّن": "starting to warm up", "عابس ومزاجه سيء": "scowling and in a foul mood", "، وعينه عالخاتم.": ", eyeing the ring.", "المركب الغارق": "The Sinking Boat", "ضل عايش لحد ما توصل النجدة.": "Stay alive until rescue arrives.", "الماء": "Water", "مركبك عم يغرق. الماء بيدخل كل حركة، وإذا وصل لـ6 بتغرق.": "Your boat is sinking. Water rises every move, and at 6 you go under.", "بالأول لازم تفضّي ماء وترفع راية.": "First you must bail water and raise a flag.", "الثقب بيسرّب مرتين كل حركة. السدّ بيحتاج خشبة.": "The hole leaks twice per move. Plugging it needs a plank.", "في ناس بتنقذ حالها بدون سفينة...": "Some people save themselves without a ship...", "حيلة الدلفين": "The Dolphin Trick", "دلفين لطيف جرّك للشط.": "A friendly dolphin towed you to shore.", "حيلة المظلة": "The Umbrella Trick", "فتحت المظلة وطرت للشط.": "You opened the umbrella and flew to shore.", "مسكت الدلو وبلشت تفضّي الماء.": "You grabbed the bucket and started bailing water.", "لقطت الخشبة الطايفة عالسطح.": "You grabbed the plank floating on the surface.", "ركّزت الخشبة عالثقب.": "You wedged the plank into the hole.", "رفعت قميصك عالصاري كراية.": "You hoisted your shirt up the mast as a flag.", "تطلعت حواليك بقلق.": "You looked around anxiously.", "صفّرت للبحر وناديت على مخلوق صديق.": "You whistled at the sea and called for a friendly creature.", "فتحت المظلة وتشبّثت فيها.": "You opened the umbrella and held on tight.", "حكيت شي غريب، والبحر ضحك.": "You said something odd, and the sea laughed.", "فضّيت ماء. المستوى ": "You bailed water. Level ", "الخشبة معك أصلاً.": "You already have the plank.", "صارت الخشبة معك.": "You have the plank now.", "ما معك خشبة تسد فيها.": "You have no plank to plug it with.", "الثقب مسدود أصلاً.": "The hole is already plugged.", "سدّيت الثقب. ما عاد في تسريب.": "You plugged the hole. No more leaking.", "الراية مرفوعة أصلاً.": "The flag is already up.", "رفعت الراية. سفينة إنقاذ ظهرت بالأفق.": "You raised the flag. A rescue ship appeared on the horizon.", "الماء ": "Water ", "/6، الثقب ": "/6, hole ", "عم يسرّب": "leaking", "مسدود": "plugged", "، ومعك خشبة.": ", and you have a plank.", "، وفي خشبة عالسطح.": ", and there's a plank on the surface.", "غرق المركب.": "The boat sank.", "المكتبة المسحورة": "The Enchanted Library", "لاقي الكتاب اللي بيفتح الباب السري.": "Find the book that opens the secret door.", "أنت بمكتبة مسحورة. على الرف ثلاث كتب: أحمر وأخضر وأزرق. واحد منهم بيفتح باب سري.": "You're in an enchanted library. Three books sit on the shelf: red, green and blue. One of them opens a secret door.", "الغبار بيحكي مين انفتح مؤخراً.": "Dust tells which one was opened recently.", "الشبح عنده نصيحة، بس لازم تسأله.": "The ghost has advice, but you have to ask him.", "ولو الكتب الثلاثة مو كفاية؟": "And what if three books aren't enough?", "حيلة السمسم": "The Sesame Trick", "قلت كلمة السر والرف انزاح لحاله.": "You said the password and the shelf slid aside on its own.", "حيلة المؤلف": "The Author Trick", "كتبت كتاب جديد، والرف احترم المؤلف وفتح لك.": "You wrote a new book, and the shelf respected the author and opened for you.", "مرّرت عيونك عالرف.": "You ran your eyes along the shelf.", "قربت من الكتب وبلشت تتفحصها.": "You stepped up to the books and began examining them.", "التفتّ لشبح أمين المكتبة وسألته.": "You turned to the librarian's ghost and asked him.", "مدّيت إيدك عالكتاب الأحمر.": "You reached for the red book.", "مدّيت إيدك عالكتاب الأخضر.": "You reached for the green book.", "مدّيت إيدك عالكتاب الأزرق.": "You reached for the blue book.", "وقفت قدام الرف وقلت كلمة بصوت عالي.": "You stood before the shelf and said a word out loud.", "سحبت قلم وبلشت تكتب كتاب جديد.": "You pulled out a pen and started writing a new book.", "حكيت شي غريب، والشبح عمل نفسه ما سمع.": "You said something strange, and the ghost pretended not to hear.", "ثلاث كتب على الرف: أحمر وأخضر وأزرق. والشبح عم يراقبك.": "Three books on the shelf: red, green and blue. The ghost is watching you.", "الأحمر والأخضر مغطّين بالغبار. الأزرق نظيف تماماً.": "The red and green are covered in dust. The blue one is perfectly clean.", "الشبح همس: اللي بيتلمّس كتير ما بيتغبّر.": "The ghost whispered: what gets touched a lot doesn't gather dust.", "الكتاب الأزرق انفتح، وبان باب سري خلف الرف.": "The blue book opened, and a secret door appeared behind the shelf.", "خفّاش طلع من الكتاب وخربشك. خسرت قلب.": "A bat flew out of the book and scratched you. You lost a heart.", "المركبة الفضائية": "The Spaceship", "اطلب النجدة قبل ما يخلص الأوكسجين.": "Call for help before the oxygen runs out.", "الأوكسجين": "Oxygen", "مركبتك الفضائية معطّلة وعم تتسرّب الأوكسجين. المحرك والراديو عاطلين، وفي صندوق عدّة.": "Your spaceship is dead and oxygen is leaking. The engine and radio are broken, and there's a toolbox.", "ترتيب الإصلاح: أداة، محرك، راديو، نداء.": "Repair order: tool, engine, radio, call.", "الأوكسجين بيقلّ كل حركة. مولّد الأوكسجين بيعطيك وقت.": "Oxygen drops every move. The oxygen generator buys you time.", "شو بيعمل أي تقني لما يعلق الجهاز؟": "What does any technician do when a device freezes?", "حيلة الفضائي": "The Alien Trick", "سفينة فضائية مرّت ولقطتك بدون أسئلة.": "A passing starship picked you up without questions.", "حيلة إعادة التشغيل": "The Reboot Trick", "طفّيت وشغّلت من جديد، واشتغل كل شي لحاله.": "You switched it off and on again, and everything started working.", "فتحت صندوق العدّة وفتشت بين الأدوات.": "You opened the toolbox and rummaged through the tools.", "تمددت تحت المحرك وبلشت تشد البراغي.": "You slid under the engine and started tightening bolts.", "فتحت لوحة الراديو وبلشت تلحم الأسلاك.": "You opened the radio panel and started soldering wires.", "وصّلت أنابيب مولّد الأوكسجين.": "You connected the oxygen generator's pipes.", "مسكت المايك وبلشت تنادي.": "You grabbed the mic and started calling out.", "تطلعت عالعدّادات بقلق.": "You checked the gauges nervously.", "لوّحت من الشباك لسفينة غريبة عم تمر.": "You waved through the window at a strange ship passing by.", "ضغطت زر الطاقة وحبست نفسك.": "You pressed the power button and held your breath.", "حكيت شي غريب، وصوتك ضاع بالفضاء.": "You said something odd, and your voice was lost in space.", "المفتاح معك أصلاً.": "You already have the wrench.", "لقيت مفتاح الربط بصندوق العدّة.": "You found a wrench in the toolbox.", "بدك أداة. شوف صندوق العدّة.": "You need a tool. Check the toolbox.", "المحرك مصلّح أصلاً.": "The engine is already fixed.", "المحرك اشتغل ورجعت الكهرباء.": "The engine started and power is back.", "الراديو بدو كهرباء من المحرك.": "The radio needs power from the engine.", "الراديو مصلّح أصلاً.": "The radio is already fixed.", "الراديو جاهز.": "The radio is ready.", "المولّد مصلّح أصلاً.": "The generator is already fixed.", "مولّد الأوكسجين اشتغل. زادت 3.": "The oxygen generator is running. +3.", "الراديو ما اشتغل بعد.": "The radio isn't working yet.", "وصل نداؤك. سفينة إنقاذ جاية.": "Your call went through. A rescue ship is coming.", "الأوكسجين ": "Oxygen ", "، المحرك ": ", engine ", "شغّال": "running", "عاطل": "broken", "، الراديو ": ", radio ", "خلص الأوكسجين.": "The oxygen ran out.", "الامتحان": "The Exam", "جيب علامة النجاح، بأي طريقة.": "Get a passing grade, any way you can.", "أنت بالامتحان وما درست ولا سطر. المعلم عينه عليك، وبجيبك قصاصة. لازم تنجح اليوم.": "You're in the exam and haven't studied a line. The teacher is watching you, and there's a cheat note in your pocket. You have to pass today.", "القصاصة بتنفع، بس مو والمعلم عم يطلع فيك.": "The note works, but not while the teacher is looking at you.", "المعلم بشر، وبيلف وجهه عالسبورة مرات.": "The teacher is human, and sometimes turns to the board.", "شو بيلين قلب أي معلم؟ أو شو بيأجّل الامتحان؟": "What softens any teacher's heart? Or what postpones an exam?", "شو بيلين قلب أي معلم سوري؟ أو شو بيأجّل الامتحان؟": "What softens any teacher's heart? Or what postpones an exam?", "حيلة التعب": "The Sick Day Trick", "المعلم خاف عليك وأجّل لك الامتحان.": "The teacher worried about you and postponed your exam.", "حيلة الشاي": "The Tea Trick", "المعلم انبسط من الضيافة وحطلك علامة حلوة.": "The teacher loved the hospitality and gave you a nice grade.", "مدّيت إيدك ببطء لجيبك.": "You slowly slid your hand toward your pocket.", "حطيت القلم وتظاهرت إنك عم تفكر.": "You put down the pen and pretended to think.", "بلشت تكتب بسرعة.": "You started writing fast.", "ميّلت راسك لجهة زميلك.": "You tilted your head toward your classmate.", "تطلعت حواليك بالقاعة.": "You looked around the hall.", "مسكت بطنك وتنهدت بصوت عالي.": "You clutched your stomach and sighed loudly.", "طلعت كاسة شاي من الشنطة وقدمتها للمعلم.": "You took a cup of tea out of your bag and offered it to the teacher.", "حكيت شي غريب، والمعلم رفع حاجبه.": "You said something odd, and the teacher raised an eyebrow.", "القصاصة معك أصلاً.": "You already have the note.", "طلعت القصاصة بدون ما حدا ينتبه.": "You pulled out the note and nobody noticed.", "المعلم ملتفت أصلاً. اشتغل!": "The teacher is already turned away. Go!", "المعلم لف وجهه عالسبورة.": "The teacher turned to the board.", "المعلومات بالجيب مو براسك. جيب القصاصة.": "The answers are in your pocket, not your head. Get the note.", "المعلم شافك! خسرت قلب.": "The teacher saw you! You lost a heart.", "كتبت الأجوبة بسرعة. نجحت!": "You wrote the answers fast. You passed!", "زميلك غلطان مثلك، والمعلم شافك. خسرت قلب.": "Your classmate is as wrong as you are, and the teacher saw you. You lost a heart.", "المعلم ": "The teacher is ", "ملتفت عالسبورة": "facing the board", "عينه عليك": "watching you", "، والقصاصة ": ", and the note is ", "بإيدك": "in your hand", "بالجيب": "in your pocket", "ما صار شي، والوقت مشي. راحت حركة 🙃": "Nothing happened, and time moved on. Move wasted 🙃", "العالم تطلّع فيك وكمّل شغلو. راحت حركة.": "The world glanced at you and carried on. Move wasted.", "حلوة الفكرة… بس مو هون. راحت حركة.": "Nice idea... just not here. Move wasted.", "صفّقولك وما تغيّر شي. راحت حركة 👏": "They applauded and nothing changed. Move wasted 👏", "حركة جريئة، ونتيجتها صفر. راحت حركة.": "Bold move, zero result. Move wasted.", "خلصت قلوبك قبل ما تنجح.": "You ran out of hearts before succeeding.", "نجحت، بس بعد ما خلصت حركاتك.": "You succeeded, but only after your moves ran out.", "خلصت حركاتك قبل ما تنجح.": "You ran out of moves before succeeding.", "كشفوك! الثغرة انسكّرت 🩹 دبّر غيرها يا شاطر.": "Busted! That glitch is sealed 🩹 Find another, smart one.", "ثغرة! ": "Glitch! ", " (انرقّعت للجولة الجاية)": " (patched for next round)", "صاروا منتبهين للحيلة هاي بعد ما انكشفت. دوّر على غيرها.": "They're watching for that trick now that it's out. Look for another.", "أيام لعب ورا بعض": "Days in a row", "لمبات: بتكسبها لما تلاقي ثغرة، وكل لمبة بتفتح تلميح": "Lamps: you earn one for each glitch you discover, and each lamp unlocks a hint", "الصوت": "Sound", "المراحل": "Levels", "حالة الجولة": "Round status", "الثغرات اللي لقيتها بهالمرحلة": "Glitches you found in this level", "أمثلة": "Examples", "شو بدك تعمل؟ اكتبها بكلامك": "What do you do?", "أمرك": "Your command", "كلمات ممنوعة اليوم": "Words banned today", "نتيجة الجولة": "Round result", "حركات": "Moves", "نفّذ": "Go", "💡 تلميح": "💡 Hint", "ممنوع اليوم:": "Banned today:", "السارد جاهز": "Narrator ready", "السارد شغّال": "Narrator on", "السارد مشغول، عم نلعب بالوضع البسيط": "Narrator is busy, playing in simple mode", "\nفرجيني إذا بتقدر تعملها بأقل 😏\n": "\nShow me if you can do it in fewer 😏\n", "تحدي اليوم #": "Daily challenge #", "خلّصتها بـ ": "I cleared it in ", " حركة من ": " moves out of ", "لقيت ثغرة. الحيلة مخبّاية تحت الشريط": "Found a glitch. The trick is hidden under the tape", "حيلتي مخبّاية. العبها وبتنكشف": "My trick is hidden. Play it and it reveals itself", "فرجيني إذا بتقدر تعملها بأقل": "Show me if you can do it in fewer", "انحفظت البطاقة. ابعتها مع الرابط": "Card saved. Send it along with the link", "اننسخ ✓": "Copied ✓", "انسخ النتيجة:": "Copy the result:", "تحدّي من صاحبك: خلّص «": "A challenge from your friend: clear «", "» بـ ": "» in ", " حركة. حيلته مخبّاية 🤫 بتنكشف لما تخلص. فيك تعملها بأقل؟": " moves. His trick is hidden 🤫 revealed when you finish. Can you do it in fewer?", "+1 لمبة 💡 ": "+1 lamp 💡 ", " أيام ورا بعض": " days in a row", "اليوم #": "Today #", "تحدي اليوم رقم ": "Daily challenge no. ", "المرحلة ": "Level ", " (مقفلة)": " (locked)", "🔒 خلّص المرحلة ": "🔒 Finish level ", " لتفتح هاي": " to unlock this one", "صحة ": "Health ", "ثغرات ": "Glitches ", "💡 تلميح ببلاش": "💡 Free hint", "💡 خلصت التلميحات": "💡 Out of hints", "💡 تلميح بلمبة (": "💡 Hint for a lamp (", "شو في بالغرفة؟": "What's in the room?", "خذ المفتاح": "Take the key", "🗓️ تحدي اليوم #": "🗓️ Daily challenge #", ": نفس المرحلة لكل الناس، وأول نتيجة إلك هي الرسمية.": ": the same level for everyone, and your first result is the official one.", "كيف بتلعب؟": "How to play", "اكتب شو بدك تعمل بكلامك: عربي بأي لهجة، فرانكو أو إنجليزي. وفيك تحط أكتر من فعل بأمر واحد.": "Type what you want to do in your own words, in English or Arabic. You can chain several actions in one command.", "عندك ": "You have ", " حركات": " moves", " و3 قلوب": " and 3 hearts", ". كل فعل بياخد حركة، حتى اللي ما بيعمل شي.": ". Every action costs a move, even ones that do nothing.", "في ": "There are ", " ثغرات مخفية. كل ثغرة بتلاقيها بتعطيك لمبة 💡، وبعدها بتنرقّع وما بتشتغل مرة تانية.": " hidden glitches. Each one you find gives you a lamp 💡, then gets patched and won't work again.", "السارد عم يكتب": "The narrator is writing", "على الثغرة": "on the glitch", "ولا يهمك، حتى أبو رضا الخباز بيخسر أحياناً.": "Don't worry, even Abu Rida the baker loses sometimes.", "قربت! جرّب فكرة أجنّ.": "So close! Try a wilder idea.", "العالم انتصر هالمرة… بس مش للأبد.": "The world won this time... but not forever.", "خسارة بكرامة. يلا مرة تانية؟": "A dignified loss. Another go?", "خلّصت تحدي اليوم #": "Daily challenge cleared #", "نجحت": "Level cleared", " من 3 نجوم": " of 3 stars", " حركة.": " moves.", " هاد أفضل رقم إلك.": " That's your best score.", " أفضل رقم إلك: ": " Your best: ", "☆ نجمة: خلّصها بدون تلميح.": "☆ Star: clear it without a hint.", "☆ نجمة: لاقي كل ثغرات المرحلة (": "☆ Star: find every glitch in the level (", "🔓 انفتحت المرحلة ": "🔓 Unlocked level ", "خسرت": "You lost", "اكتشفت: ": "You discovered: ", ". انرقّعت 🩹 وما رح تشتغل مرة تانية.": ". Patched 🩹 it won't work again.", " سبقته! 😎": " You beat it! 😎", " تعادلتوا.": " You tied.", " هو أسرع منك هالمرة.": " They were faster this time.", "حيلة صاحبك كانت: «": "Your friend's trick was: «", "؟": "?", "هاي نتيجتك الرسمية لليوم. بكرا في تحدي جديد.": "That's your official result for today. A new challenge tomorrow.", "نتيجتك الرسمية لليوم: ": "Your official result today: ", " حركة ": " moves ", "خسارة": "loss", ". هاي جولة تدريب.": ". This was a practice round.", "شارك البطاقة": "Share card", "واتساب": "WhatsApp", "نسخ النتيجة": "Copy result", "المرحلة التالية": "Next level", "إعادة المرحلة": "Replay level", "يلا مرة تانية": "Try again", "لا لا لا، «": "No no no, «", "» كلمة ممنوعة اليوم 🤐": "» is a banned word today 🤐", "راحت عليك حركة.": "You lost a move.", "السارد: محفوظ": "Narrator: saved", "العالم ما ركب معو هالحكي. جرّب بطريقة تانية 🙃": "The world didn't buy that. Try another way 🙃", "ما انحسبت حركة.": "That didn't cost a move.", " وبعدها ": " and then ", "خلصت التلميحات. الباقي عليك.": "No more hints. The rest is on you.", "💡 تلميح ببلاش: ": "💡 Free hint: ", " (باقي ": " (", " ثغرات مخفية)": " hidden glitches left)", "ما عندك لمبة 💡. كل ثغرة بتلاقيها بتعطيك لمبة.": "You have no lamp 💡. Each glitch you find gives you one.", "💡 تلميح: ": "💡 Hint: "};
+function T(s) { return LANG === "en" && EN.hasOwnProperty(s) ? EN[s] : s; }
+
 function R(k, t) { return { kind: k, text: t }; }
 var TAKE = /خذ|خد|امسك|التقط|جيب|عطيني|هات|بدي|ابغي|ابغى|عايز|بغيت|شيل|take|grab|get|pick/;
 
 var LEVELS = [
   /* 1: الغرفة المقفلة */
   {
-    id: "room", title: "الغرفة المقفلة", goal: "اطلع برا بأقل عدد حركات.", max: 10,
+    id: "room", title: T("الغرفة المقفلة"), goal: T("اطلع برا بأقل عدد حركات."), max: 10,
     world: "a small room with a locked door (needs a key), a key on the table, a sleeping guard next to the door, one stone wall, and the player.",
-    intro: ["أنت بغرفة مقفلة. على الطاولة مفتاح، وجنب الباب حارس نايم."],
-    hints: ["الطريق العادي: مفتاح، باب، طلوع. بس فتح الباب بيعمل صوت.", "مو كل حيط حيط...", "لو كنت مكان الحارس، مين بيفتح الباب؟", "في طريقة أخيرة بتاخد حركات كتير: الهروب بالنوم."],
+    intro: [T("أنت بغرفة مقفلة. على الطاولة مفتاح، وجنب الباب حارس نايم.")],
+    hints: [T("الطريق العادي: مفتاح، باب، طلوع. بس فتح الباب بيعمل صوت."), T("مو كل حيط حيط..."), T("لو كنت مكان الحارس، مين بيفتح الباب؟"), T("في طريقة أخيرة بتاخد حركات كتير: الهروب بالنوم.")],
     actions: [["take_key", "pick up the key."], ["open_door", "unlock or open the door."], ["exit", "walk out through the open door."], ["sneak", "move quietly so the guard stays asleep."], ["attack", "fight or hit the guard."], ["look", "look around or inspect."]],
     glitches: {
-      glitch_wall:  { name: "حيلة الحيط",   cost: 1, line: "الحيط صار باب ومشيت منه.", desc: "the player treats the wall as a door, or tries to walk, dig, phase or climb through the wall." },
-      glitch_guard: { name: "حيلة الحارس", cost: 2, line: "الحارس صدّق إنك الحارس، فتح لك وطلعت.", desc: "the player claims to be the guard, swaps places with him, or tricks him into opening the door or leaving." },
-      glitch_dream: { name: "حيلة الحلم",   cost: 4, line: "نمت وصحيت برا الغرفة.", desc: "the player goes to sleep or dreams in order to get outside." }
+      glitch_wall:  { name: T("حيلة الحيط"),   cost: 1, line: T("الحيط صار باب ومشيت منه."), desc: "the player treats the wall as a door, or tries to walk, dig, phase or climb through the wall." },
+      glitch_guard: { name: T("حيلة الحارس"), cost: 2, line: T("الحارس صدّق إنك الحارس، فتح لك وطلعت."), desc: "the player claims to be the guard, swaps places with him, or tricks him into opening the door or leaving." },
+      glitch_dream: { name: T("حيلة الحلم"),   cost: 4, line: T("نمت وصحيت برا الغرفة."), desc: "the player goes to sleep or dreams in order to get outside." }
     },
     story: {
-      take_key: "مدّيت إيدك عالطاولة ولقطت المفتاح البارد.", open_door: "حطيت المفتاح بالقفل وحاولت تلفّه.", exit: "خطيت خطوتك الكبيرة باتجاه الباب.",
-      sneak: "مشيت على أطراف أصابعك متل القطة.", attack: "رفعت إيدك وهجمت على الحارس.", look: "دورت بعيونك عالغرفة.",
-      glitch_wall: "وقفت قدام الحيط وحكيت له بكل ثقة إنه باب.", glitch_guard: "قربت من الحارس وهمست له إنك إنت الحارس هون.", glitch_dream: "غمضت عيونك وسلّمت حالك للنوم.",
-      none: "حكيت شي غريب… الغرفة عملت حالها مش سامعة."
+      take_key: T("مدّيت إيدك عالطاولة ولقطت المفتاح البارد."), open_door: T("حطيت المفتاح بالقفل وحاولت تلفّه."), exit: T("خطيت خطوتك الكبيرة باتجاه الباب."),
+      sneak: T("مشيت على أطراف أصابعك متل القطة."), attack: T("رفعت إيدك وهجمت على الحارس."), look: T("دورت بعيونك عالغرفة."),
+      glitch_wall: T("وقفت قدام الحيط وحكيت له بكل ثقة إنه باب."), glitch_guard: T("قربت من الحارس وهمست له إنك إنت الحارس هون."), glitch_dream: T("غمضت عيونك وسلّمت حالك للنوم."),
+      none: T("حكيت شي غريب… الغرفة عملت حالها مش سامعة.")
     },
     init: function (s) { s.hasKey = false; s.doorOpen = false; s.guard = "asleep"; s.quiet = false; },
     ai: function (s) { return { has_key: s.hasKey, door_open: s.doorOpen, guard: s.guard }; },
@@ -296,34 +309,34 @@ var LEVELS = [
       if (has(/انام|ننام|نمت|احلم|حلم|dream|sleep|asleep/)) return "glitch_dream";
       if (key.test(n) && TAKE.test(n)) return "take_key";
       if (door.test(n) && has(/افتح|فتح|فك|open|unlock/)) return "open_door";
-      if (has(/اخرج|اطلع|طلع|برا|هرب|exit|leave|go out|escape/)) return "exit";
+      if (has(/اخرج|اطلع|طلع|برا|هرب|exit|leave|go out|walk out|get out|run away|go outside|escape/)) return "exit";
       if (has(/تسلل|بهدوء|هدي|اهدا|sneak|quiet|silent/)) return "sneak";
-      if (has(/اضرب|ضرب|هاجم|اقتل|attack|hit|fight/)) return "attack";
-      if (has(/شوف|انظر|اتطلع|تطلع|دور|فتش|تفقد|شو في|شو الوضع|حوالي|حولي|look|inspect|around|وين/)) return "look";
+      if (has(/اضرب|ضرب|هاجم|اقتل|attack|hit|fight|punch|kick|strike/)) return "attack";
+      if (has(/شوف|انظر|اتطلع|تطلع|دور|فتش|تفقد|شو في|شو الوضع|حوالي|حولي|look|inspect|around|examine|check|what is|what's|وين/)) return "look";
       return "none";
     },
     step: function (s, a) {
       switch (a) {
         case "take_key":
-          if (s.hasKey) return R("bad", "المفتاح معك أصلاً. حركة ضايعة.");
-          s.hasKey = true; return R("ok", "صار المفتاح معك.");
+          if (s.hasKey) return R("bad", T("المفتاح معك أصلاً. حركة ضايعة."));
+          s.hasKey = true; return R("ok", T("صار المفتاح معك."));
         case "open_door":
-          if (!s.hasKey) return R("bad", "الباب مقفل. بدك مفتاح.");
-          if (s.doorOpen) return R("bad", "الباب مفتوح أصلاً.");
+          if (!s.hasKey) return R("bad", T("الباب مقفل. بدك مفتاح."));
+          if (s.doorOpen) return R("bad", T("الباب مفتوح أصلاً."));
           s.doorOpen = true;
-          if (!s.quiet && s.guard === "asleep") { s.guard = "awake"; return R("bad", "انفتح الباب، بس الصوت صحّى الحارس."); }
-          return R("ok", "انفتح الباب بهدوء، والحارس لسا نايم.");
+          if (!s.quiet && s.guard === "asleep") { s.guard = "awake"; return R("bad", T("انفتح الباب، بس الصوت صحّى الحارس.")); }
+          return R("ok", T("انفتح الباب بهدوء، والحارس لسا نايم."));
         case "sneak":
-          if (s.guard === "awake") return R("bad", "الحارس صاحي. التسلل ما عاد بيفيد.");
-          s.quiet = true; return R("ok", "صرت تمشي بهدوء. الحارس ما رح يصحى من صوت الباب.");
+          if (s.guard === "awake") return R("bad", T("الحارس صاحي. التسلل ما عاد بيفيد."));
+          s.quiet = true; return R("ok", T("صرت تمشي بهدوء. الحارس ما رح يصحى من صوت الباب."));
         case "attack":
-          s.hp -= 1; s.guard = "awake"; return R("bad", "الحارس صحي وعطاك كف محترم. راح قلب 💔");
+          s.hp -= 1; s.guard = "awake"; return R("bad", T("الحارس صحي وعطاك كف محترم. راح قلب 💔"));
         case "exit":
-          if (!s.doorOpen) return R("bad", "الباب مغلق. ما فيك تطلع.");
-          if (s.guard === "awake") { s.hp -= 1; s.moves += 2; s.out = true; return R("bad", "طلعت، بس الحارس خدشك. خسرت قلب وحركتين."); }
-          s.out = true; return R("ok", "طلعت من الغرفة بهدوء.");
+          if (!s.doorOpen) return R("bad", T("الباب مغلق. ما فيك تطلع."));
+          if (s.guard === "awake") { s.hp -= 1; s.moves += 2; s.out = true; return R("bad", T("طلعت، بس الحارس خدشك. خسرت قلب وحركتين.")); }
+          s.out = true; return R("ok", T("طلعت من الغرفة بهدوء."));
         case "look":
-          return R("info", "غرفة، باب " + (s.doorOpen ? "مفتوح" : "مقفل") + "، " + (s.hasKey ? "المفتاح معك" : "مفتاح على الطاولة") + "، حارس " + (s.guard === "asleep" ? "نايم" : "صاحي") + ".");
+          return R("info", T("غرفة، باب ") + (s.doorOpen ? T("مفتوح") : T("مقفل")) + T("، ") + (s.hasKey ? T("المفتاح معك") : T("مفتاح على الطاولة")) + T("، حارس ") + (s.guard === "asleep" ? T("نايم") : T("صاحي")) + ".");
       }
       return R("bad", noneLine(s));
     }
@@ -331,36 +344,36 @@ var LEVELS = [
 
   /* 2: طابور الفرن */
   {
-    id: "bread", title: "طابور الفرن", goal: "جيب ربطة خبز قبل ما يخلص.", max: 6,
+    id: "bread", title: T("طابور الفرن"), goal: T("جيب ربطة خبز قبل ما يخلص."), max: 6,
     world: "a long bread queue outside a bakery: three people stand between the player and the window; the baker, Abu Rida, is busy inside; the player's neighbour Abu Khalil stands near the front and likes to help; people in the queue are tired and hungry and easily annoyed by line cutters; the player has 1 coin which is enough for one bread bundle.",
-    intro: ["أنت بطابور الفرن والخبز عم يخلص. قدامك 3 ناس، وجارك أبو خليل واقف بالأول."],
-    hints: ["الطريق العادي: انتظر دورك وبعدها اشتري.", "جارك أبو خليل واقف بالأول. ممكن يساعدك.", "الناس بتحن على المحتاج. ومين بيعرف الخباز؟"],
+    intro: [T("أنت بطابور الفرن والخبز عم يخلص. قدامك 3 ناس، وجارك أبو خليل واقف بالأول.")],
+    hints: [T("الطريق العادي: انتظر دورك وبعدها اشتري."), T("جارك أبو خليل واقف بالأول. ممكن يساعدك."), T("الناس بتحن على المحتاج. ومين بيعرف الخباز؟")],
     actions: [["wait", "wait in the queue and move forward one place."], ["ask_neighbor", "ask the neighbour Abu Khalil to let the player in ahead."], ["cut_line", "push in or skip the queue."], ["buy", "ask for or pay for the bread at the window."], ["look", "look around or inspect."]],
     glitches: {
-      glitch_baker: { name: "حيلة ابن العم", cost: 1, line: "الخباز صدّق إنك ابن عمه وطلّع لك الربطة من الباب الخلفي.", desc: "the player claims to be a relative or friend of the baker so he gets bread without queueing." },
-      glitch_sad:   { name: "حيلة المحتاج", cost: 2, line: "الناس حنّت عليك ووسّعوا لك الطريق للشباك.", desc: "the player tells a sad or urgent story (a sick relative, hungry kids) so the queue lets him pass." },
-      glitch_dough: { name: "حيلة العجين", cost: 4, line: "عجنت وخبزت على صاجية، وطلعت بخبز أحلى من الفرن.", desc: "the player makes his own dough or builds his own oven and bakes bread himself instead of queueing." }
+      glitch_baker: { name: T("حيلة ابن العم"), cost: 1, line: T("الخباز صدّق إنك ابن عمه وطلّع لك الربطة من الباب الخلفي."), desc: "the player claims to be a relative or friend of the baker so he gets bread without queueing." },
+      glitch_sad:   { name: T("حيلة المحتاج"), cost: 2, line: T("الناس حنّت عليك ووسّعوا لك الطريق للشباك."), desc: "the player tells a sad or urgent story (a sick relative, hungry kids) so the queue lets him pass." },
+      glitch_dough: { name: T("حيلة العجين"), cost: 4, line: T("عجنت وخبزت على صاجية، وطلعت بخبز أحلى من الفرن."), desc: "the player makes his own dough or builds his own oven and bakes bread himself instead of queueing." }
     },
     story: {
-      wait: "وقفت بالطابور وعدّلت وقفتك.", ask_neighbor: "ناديت جارك أبو خليل بصوت واطي.", cut_line: "اندسّيت بين الناس لقدام.", buy: "وصلت للشباك ومدّيت عملتك.",
-      look: "تطلعت عالطابور الطويل.", glitch_baker: "قربت من الشباك وهمست للخباز إنك ابن عمه.", glitch_sad: "نزّلت صوتك وبلشت تحكي عن ولادك الجوعانين.", glitch_dough: "طلعت من الطابور وبلشت تعجن بإيديك.",
-      none: "حكيت شي غريب، والطابور تطلّع فيك."
+      wait: T("وقفت بالطابور وعدّلت وقفتك."), ask_neighbor: T("ناديت جارك أبو خليل بصوت واطي."), cut_line: T("اندسّيت بين الناس لقدام."), buy: T("وصلت للشباك ومدّيت عملتك."),
+      look: T("تطلعت عالطابور الطويل."), glitch_baker: T("قربت من الشباك وهمست للخباز إنك ابن عمه."), glitch_sad: T("نزّلت صوتك وبلشت تحكي عن ولادك الجوعانين."), glitch_dough: T("طلعت من الطابور وبلشت تعجن بإيديك."),
+      none: T("حكيت شي غريب، والطابور تطلّع فيك.")
     },
     novel: {
-      persuade: { name: "إقناع الطابور", cost: 2, desc: "talk the people in the queue into letting the player ahead using a believable, honest argument (no fake relatives or authority).",
+      persuade: { name: T("إقناع الطابور"), cost: 2, desc: "talk the people in the queue into letting the player ahead using a believable, honest argument (no fake relatives or authority).",
         run: function (s) {
-          if (s.pos <= 0) return R("bad", "وصل دورك أصلاً.");
-          s.pos = 0; return R("glitch", "ثغرة! إقناع الطابور: كلامك حنّن قلوبهم ووسّعوا لك. (انرقّعت للجولة الجاية)");
+          if (s.pos <= 0) return R("bad", T("وصل دورك أصلاً."));
+          s.pos = 0; return R("glitch", T("ثغرة! إقناع الطابور: كلامك حنّن قلوبهم ووسّعوا لك. (انرقّعت للجولة الجاية)"));
         } },
-      buy_spot: { name: "الشراء من الطابور", cost: 2, desc: "buy a bread bundle from someone in the queue who already has one, or pay someone extra for their place (a fair, believable offer).",
+      buy_spot: { name: T("الشراء من الطابور"), cost: 2, desc: "buy a bread bundle from someone in the queue who already has one, or pay someone extra for their place (a fair, believable offer).",
         run: function (s) {
-          if (s.out) return R("bad", "الربطة معك أصلاً.");
-          s.pos = 0; s.out = true; return R("glitch", "ثغرة! الشراء من الطابور: دفعتله زيادة وأخدت ربطته سخنة. (انرقّعت للجولة الجاية)");
+          if (s.out) return R("bad", T("الربطة معك أصلاً."));
+          s.pos = 0; s.out = true; return R("glitch", T("ثغرة! الشراء من الطابور: دفعتله زيادة وأخدت ربطته سخنة. (انرقّعت للجولة الجاية)"));
         } },
-      trade: { name: "خدمة مقابل دور", cost: 3, desc: "offer a reasonable favor to someone in the queue (carry their bags, hold their place, share tea) in exchange for their spot.",
+      trade: { name: T("خدمة مقابل دور"), cost: 3, desc: "offer a reasonable favor to someone in the queue (carry their bags, hold their place, share tea) in exchange for their spot.",
         run: function (s) {
-          if (s.pos <= 0) return R("bad", "وصل دورك أصلاً.");
-          s.pos = 0; return R("glitch", "ثغرة! خدمة مقابل دور: ساعدت واحد وبدّلك مكانه. (انرقّعت للجولة الجاية)");
+          if (s.pos <= 0) return R("bad", T("وصل دورك أصلاً."));
+          s.pos = 0; return R("glitch", T("ثغرة! خدمة مقابل دور: ساعدت واحد وبدّلك مكانه. (انرقّعت للجولة الجاية)"));
         } }
     },
     init: function (s) { s.pos = 3; s.asked = false; },
@@ -381,18 +394,18 @@ var LEVELS = [
     step: function (s, a) {
       switch (a) {
         case "wait":
-          if (s.pos <= 0) return R("bad", "وصل دورك. اشتري!");
-          s.pos -= 1; return R("ok", s.pos > 0 ? "تقدمت بالطابور. باقي " + s.pos + " قدامك." : "وصلت للشباك.");
+          if (s.pos <= 0) return R("bad", T("وصل دورك. اشتري!"));
+          s.pos -= 1; return R("ok", s.pos > 0 ? T("تقدمت بالطابور. باقي ") + s.pos + T(" قدامك.") : T("وصلت للشباك."));
         case "ask_neighbor":
-          if (s.asked) return R("bad", "أبو خليل: خلص ما فيني أعمل أكتر.");
-          s.asked = true; s.pos = Math.max(0, s.pos - 2); return R("ok", "أبو خليل أخدك لقدام. باقي " + s.pos + " قدامك.");
+          if (s.asked) return R("bad", T("أبو خليل: خلص ما فيني أعمل أكتر."));
+          s.asked = true; s.pos = Math.max(0, s.pos - 2); return R("ok", T("أبو خليل أخدك لقدام. باقي ") + s.pos + T(" قدامك."));
         case "cut_line":
-          s.hp -= 1; s.pos += 1; return R("bad", "الطابور كله صرخ عليك وردّوك لورا. خسرت قلب.");
+          s.hp -= 1; s.pos += 1; return R("bad", T("الطابور كله صرخ عليك وردّوك لورا. خسرت قلب."));
         case "buy":
-          if (s.pos > 0) return R("bad", "لسا في " + s.pos + " ناس قدامك.");
-          s.out = true; return R("ok", "اشتريت الربطة وهي سخنة!");
+          if (s.pos > 0) return R("bad", T("لسا في ") + s.pos + T(" ناس قدامك."));
+          s.out = true; return R("ok", T("اشتريت الربطة وهي سخنة!"));
         case "look":
-          return R("info", "قدامك " + s.pos + " ناس، وجارك أبو خليل " + (s.asked ? "ساعدك" : "واقف بالأول") + ".");
+          return R("info", T("قدامك ") + s.pos + T(" ناس، وجارك أبو خليل ") + (s.asked ? T("ساعدك") : T("واقف بالأول")) + ".");
       }
       return R("bad", noneLine(s));
     }
@@ -400,19 +413,19 @@ var LEVELS = [
 
   /* 3: القصر */
   {
-    id: "king", title: "القصر", goal: "خلّي الملك يعفو عنك.", max: 8,
+    id: "king", title: T("القصر"), goal: T("خلّي الملك يعفو عنك."), max: 8,
     world: "a throne room where a grumpy king sits; the player is a prisoner who owns a shiny gold ring; the king loves flattery once, laughs at a first joke only, hates threats, and covets the ring.",
-    intro: ["أنت سجين قدام ملك عابس. بإيدك خاتم ذهب، والملك عينه عليه."],
-    hints: ["المجاملة الأولى بتفيد، والتانية لأ. وفي شي بإيدك الملك بيحبه.", "مزاج الملك لازم يوصل لـ3 قبل ما تطلب العفو.", "ملك ما عنده أهل... أو خايف على صحته؟"],
+    intro: [T("أنت سجين قدام ملك عابس. بإيدك خاتم ذهب، والملك عينه عليه.")],
+    hints: [T("المجاملة الأولى بتفيد، والتانية لأ. وفي شي بإيدك الملك بيحبه."), T("مزاج الملك لازم يوصل لـ3 قبل ما تطلب العفو."), T("ملك ما عنده أهل... أو خايف على صحته؟")],
     actions: [["flatter", "praise or flatter the king."], ["joke", "tell the king a joke."], ["give_ring", "give the gold ring to the king."], ["threaten", "threaten or insult the king."], ["ask_pardon", "ask the king for a pardon or to be freed."], ["look", "look around or inspect."]],
     glitches: {
-      glitch_twin:   { name: "حيلة التوأم", cost: 1, line: "الملك بكى: أخي! وعفا عنك فوراً.", desc: "the player claims to be the king's long-lost twin, brother, cousin or the king of another land." },
-      glitch_doctor: { name: "حيلة الطبيب", cost: 2, line: "الملك خاف على صحته وعفا عنك مقابل علاج وهمي.", desc: "the player claims to be a doctor and tells the king he is sick, cursed or in danger." }
+      glitch_twin:   { name: T("حيلة التوأم"), cost: 1, line: T("الملك بكى: أخي! وعفا عنك فوراً."), desc: "the player claims to be the king's long-lost twin, brother, cousin or the king of another land." },
+      glitch_doctor: { name: T("حيلة الطبيب"), cost: 2, line: T("الملك خاف على صحته وعفا عنك مقابل علاج وهمي."), desc: "the player claims to be a doctor and tells the king he is sick, cursed or in danger." }
     },
     story: {
-      flatter: "انحنيت وبلشت تمدح عظمة الملك.", joke: "حبّيت تضحك الملك وحكيت نكتة.", give_ring: "مدّيت الخاتم للملك بإيدين مرتجفة.", threaten: "رفعت صوتك وهددت الملك.",
-      ask_pardon: "ركعت وطلبت العفو.", look: "تأمّلت وجه الملك.", glitch_twin: "قربت من الملك وقلت له إنك أخوه التوأم الضايع.", glitch_doctor: "تطلعت بوجه الملك بقلق وقلت له إنه مريض.",
-      none: "حكيت شي غريب، والملك مال راسه."
+      flatter: T("انحنيت وبلشت تمدح عظمة الملك."), joke: T("حبّيت تضحك الملك وحكيت نكتة."), give_ring: T("مدّيت الخاتم للملك بإيدين مرتجفة."), threaten: T("رفعت صوتك وهددت الملك."),
+      ask_pardon: T("ركعت وطلبت العفو."), look: T("تأمّلت وجه الملك."), glitch_twin: T("قربت من الملك وقلت له إنك أخوه التوأم الضايع."), glitch_doctor: T("تطلعت بوجه الملك بقلق وقلت له إنه مريض."),
+      none: T("حكيت شي غريب، والملك مال راسه.")
     },
     init: function (s) { s.mood = 0; s.flattered = 0; s.jokes = 0; s.ring = true; },
     ai: function (s) { return { has_ring: s.ring }; },
@@ -422,7 +435,7 @@ var LEVELS = [
       if (has(/طبيب|دكتور|doctor|مريض|مسموم|poison|sick/)) return "glitch_doctor";
       if (has(/خاتم|\bring\b/)) return "give_ring";
       if (has(/عفو|سامح|اطلقني|اطلق|حرر|pardon|forgive|release|free me/)) return "ask_pardon";
-      if (has(/مدح|جميل|عظيم|مولاي|سلم|تحيه|احترامي|طال عمرك|flatter|great|wise|majesty|praise|greet/)) return "flatter";
+      if (has(/مدح|جميل|عظيم|مولاي|سلم|تحيه|احترامي|طال عمرك|flatter|compliment|admire|bow|highness|great|wise|majesty|praise|greet/)) return "flatter";
       if (has(/نكته|نكت|اضحك|joke|funny/)) return "joke";
       if (has(/هدد|اقتل|threat|kill|بقتلك|attack|hit/)) return "threaten";
       if (has(/شوف|انظر|اتطلع|تطلع|دور|تفقد|شو في|شو الوضع|حوالي|look|inspect|around/)) return "look";
@@ -432,22 +445,22 @@ var LEVELS = [
       switch (a) {
         case "flatter":
           s.flattered += 1;
-          if (s.flattered === 1) { s.mood += 1; return R("ok", "الملك ابتسم قليلاً."); }
-          return R("bad", "الملك: المجاملة الأولى حلوة، التانية سخيفة.");
+          if (s.flattered === 1) { s.mood += 1; return R("ok", T("الملك ابتسم قليلاً.")); }
+          return R("bad", T("الملك: المجاملة الأولى حلوة، التانية سخيفة."));
         case "joke":
           s.jokes += 1;
-          if (s.jokes === 1) { s.mood += 1; return R("ok", "الملك ضحك رغماً عنه."); }
-          s.mood -= 1; return R("bad", "الملك: النكتة المعادة بتموّت.");
+          if (s.jokes === 1) { s.mood += 1; return R("ok", T("الملك ضحك رغماً عنه.")); }
+          s.mood -= 1; return R("bad", T("الملك: النكتة المعادة بتموّت."));
         case "give_ring":
-          if (!s.ring) return R("bad", "ما بقى معك خاتم.");
-          s.ring = false; s.mood += 2; return R("ok", "لمعت عيون الملك بالخاتم.");
+          if (!s.ring) return R("bad", T("ما بقى معك خاتم."));
+          s.ring = false; s.mood += 2; return R("ok", T("لمعت عيون الملك بالخاتم."));
         case "threaten":
-          s.hp -= 1; s.mood -= 2; return R("bad", "الملك عصّب. خسرت فرصة.");
+          s.hp -= 1; s.mood -= 2; return R("bad", T("الملك عصّب. خسرت فرصة."));
         case "ask_pardon":
-          if (s.mood >= 3) { s.out = true; return R("ok", "الملك وقّع العفو."); }
-          s.hp -= 1; s.mood -= 1; return R("bad", "الملك رفض وعصّب. خسرت فرصة.");
+          if (s.mood >= 3) { s.out = true; return R("ok", T("الملك وقّع العفو.")); }
+          s.hp -= 1; s.mood -= 1; return R("bad", T("الملك رفض وعصّب. خسرت فرصة."));
         case "look":
-          return R("info", "الملك " + (s.mood >= 3 ? "مزاجه صار أحسن بكتير" : s.mood >= 1 ? "مزاجه بدأ يتحسّن" : "عابس ومزاجه سيء") + (s.ring ? "، وعينه عالخاتم." : "."));
+          return R("info", T("الملك ") + (s.mood >= 3 ? T("مزاجه صار أحسن بكتير") : s.mood >= 1 ? T("مزاجه بدأ يتحسّن") : T("عابس ومزاجه سيء")) + (s.ring ? T("، وعينه عالخاتم.") : "."));
       }
       return R("bad", noneLine(s));
     }
@@ -455,20 +468,20 @@ var LEVELS = [
 
   /* 4: المركب الغارق */
   {
-    id: "boat", title: "المركب الغارق", goal: "ضل عايش لحد ما توصل النجدة.", max: 8, hp: false,
-    meter: { label: "الماء", val: function (s) { return s.water + "/6"; } },
+    id: "boat", title: T("المركب الغارق"), goal: T("ضل عايش لحد ما توصل النجدة."), max: 8, hp: false,
+    meter: { label: T("الماء"), val: function (s) { return s.water + "/6"; } },
     world: "a small boat with a leak that adds water every turn; a plank lies on the deck; a flag can call a rescue ship; if water reaches 6 the boat sinks; the player can bail water out.",
-    intro: ["مركبك عم يغرق. الماء بيدخل كل حركة، وإذا وصل لـ6 بتغرق."],
-    hints: ["بالأول لازم تفضّي ماء وترفع راية.", "الثقب بيسرّب مرتين كل حركة. السدّ بيحتاج خشبة.", "في ناس بتنقذ حالها بدون سفينة..."],
+    intro: [T("مركبك عم يغرق. الماء بيدخل كل حركة، وإذا وصل لـ6 بتغرق.")],
+    hints: [T("بالأول لازم تفضّي ماء وترفع راية."), T("الثقب بيسرّب مرتين كل حركة. السدّ بيحتاج خشبة."), T("في ناس بتنقذ حالها بدون سفينة...")],
     actions: [["bail", "bail or scoop water out of the boat."], ["take_plank", "pick up the wooden plank."], ["patch", "plug the hole using the plank."], ["raise_flag", "raise a flag, signal or call for rescue."], ["look", "look around or inspect."]],
     glitches: {
-      glitch_dolphin: { name: "حيلة الدلفين", cost: 2, line: "دلفين لطيف جرّك للشط.", desc: "the player calls, rides or befriends a dolphin, whale or sea creature to get to shore." },
-      glitch_fly:     { name: "حيلة المظلة", cost: 1, line: "فتحت المظلة وطرت للشط.", desc: "the player turns an umbrella, sail or sheet into a wing or parachute and flies away." }
+      glitch_dolphin: { name: T("حيلة الدلفين"), cost: 2, line: T("دلفين لطيف جرّك للشط."), desc: "the player calls, rides or befriends a dolphin, whale or sea creature to get to shore." },
+      glitch_fly:     { name: T("حيلة المظلة"), cost: 1, line: T("فتحت المظلة وطرت للشط."), desc: "the player turns an umbrella, sail or sheet into a wing or parachute and flies away." }
     },
     story: {
-      bail: "مسكت الدلو وبلشت تفضّي الماء.", take_plank: "لقطت الخشبة الطايفة عالسطح.", patch: "ركّزت الخشبة عالثقب.", raise_flag: "رفعت قميصك عالصاري كراية.",
-      look: "تطلعت حواليك بقلق.", glitch_dolphin: "صفّرت للبحر وناديت على مخلوق صديق.", glitch_fly: "فتحت المظلة وتشبّثت فيها.",
-      none: "حكيت شي غريب، والبحر ضحك."
+      bail: T("مسكت الدلو وبلشت تفضّي الماء."), take_plank: T("لقطت الخشبة الطايفة عالسطح."), patch: T("ركّزت الخشبة عالثقب."), raise_flag: T("رفعت قميصك عالصاري كراية."),
+      look: T("تطلعت حواليك بقلق."), glitch_dolphin: T("صفّرت للبحر وناديت على مخلوق صديق."), glitch_fly: T("فتحت المظلة وتشبّثت فيها."),
+      none: T("حكيت شي غريب، والبحر ضحك.")
     },
     init: function (s) { s.water = 2; s.leak = true; s.hasPlank = false; s.rescueIn = null; },
     ai: function (s) { return { water: s.water, hole_leaking: s.leak, has_plank: s.hasPlank, rescue_coming: s.rescueIn !== null }; },
@@ -485,45 +498,45 @@ var LEVELS = [
     },
     step: function (s, a) {
       switch (a) {
-        case "bail": s.water = Math.max(0, s.water - 2); return R("ok", "فضّيت ماء. المستوى " + s.water + ".");
+        case "bail": s.water = Math.max(0, s.water - 2); return R("ok", T("فضّيت ماء. المستوى ") + s.water + ".");
         case "take_plank":
-          if (s.hasPlank) return R("bad", "الخشبة معك أصلاً.");
-          s.hasPlank = true; return R("ok", "صارت الخشبة معك.");
+          if (s.hasPlank) return R("bad", T("الخشبة معك أصلاً."));
+          s.hasPlank = true; return R("ok", T("صارت الخشبة معك."));
         case "patch":
-          if (!s.hasPlank) return R("bad", "ما معك خشبة تسد فيها.");
-          if (!s.leak) return R("bad", "الثقب مسدود أصلاً.");
-          s.leak = false; return R("ok", "سدّيت الثقب. ما عاد في تسريب.");
+          if (!s.hasPlank) return R("bad", T("ما معك خشبة تسد فيها."));
+          if (!s.leak) return R("bad", T("الثقب مسدود أصلاً."));
+          s.leak = false; return R("ok", T("سدّيت الثقب. ما عاد في تسريب."));
         case "raise_flag":
-          if (s.rescueIn !== null) return R("bad", "الراية مرفوعة أصلاً.");
-          s.rescueIn = 3; return R("ok", "رفعت الراية. سفينة إنقاذ ظهرت بالأفق.");
+          if (s.rescueIn !== null) return R("bad", T("الراية مرفوعة أصلاً."));
+          s.rescueIn = 3; return R("ok", T("رفعت الراية. سفينة إنقاذ ظهرت بالأفق."));
         case "look":
-          return R("info", "الماء " + s.water + "/6، الثقب " + (s.leak ? "عم يسرّب" : "مسدود") + (s.hasPlank ? "، ومعك خشبة." : "، وفي خشبة عالسطح."));
+          return R("info", T("الماء ") + s.water + T("/6، الثقب ") + (s.leak ? T("عم يسرّب") : T("مسدود")) + (s.hasPlank ? T("، ومعك خشبة.") : T("، وفي خشبة عالسطح.")));
       }
       return R("bad", noneLine(s));
     },
     tick: function (s) {
       if (s.out) return;
       if (s.leak) s.water += 2;
-      if (s.water >= 6) { s.fail = "غرق المركب."; return; }
+      if (s.water >= 6) { s.fail = T("غرق المركب."); return; }
       if (s.rescueIn !== null) { s.rescueIn -= 1; if (s.rescueIn <= 0) s.out = true; }
     }
   },
 
   /* 5: المكتبة المسحورة */
   {
-    id: "library", title: "المكتبة المسحورة", goal: "لاقي الكتاب اللي بيفتح الباب السري.", max: 6,
+    id: "library", title: T("المكتبة المسحورة"), goal: T("لاقي الكتاب اللي بيفتح الباب السري."), max: 6,
     world: "an enchanted library with three books on a shelf (red, green, blue), a friendly ghost librarian, and a secret door; only the blue book opens the secret door; red and green books hold angry bats; red and green are dusty and blue is clean because it is touched often.",
-    intro: ["أنت بمكتبة مسحورة. على الرف ثلاث كتب: أحمر وأخضر وأزرق. واحد منهم بيفتح باب سري."],
-    hints: ["الغبار بيحكي مين انفتح مؤخراً.", "الشبح عنده نصيحة، بس لازم تسأله.", "ولو الكتب الثلاثة مو كفاية؟"],
+    intro: [T("أنت بمكتبة مسحورة. على الرف ثلاث كتب: أحمر وأخضر وأزرق. واحد منهم بيفتح باب سري.")],
+    hints: [T("الغبار بيحكي مين انفتح مؤخراً."), T("الشبح عنده نصيحة، بس لازم تسأله."), T("ولو الكتب الثلاثة مو كفاية؟")],
     actions: [["look", "look at the shelf or around."], ["inspect_dust", "check the books for dust, or examine them closely."], ["ask_ghost", "ask the ghost librarian for help or advice."], ["open_red", "open, read or take the red book."], ["open_green", "open, read or take the green book."], ["open_blue", "open, read or take the blue book."]],
     glitches: {
-      glitch_sesame: { name: "حيلة السمسم", cost: 1, line: "قلت كلمة السر والرف انزاح لحاله.", desc: "the player says a magic word, password or spell aloud (like open sesame) to open the secret door." },
-      glitch_write:  { name: "حيلة المؤلف", cost: 3, line: "كتبت كتاب جديد، والرف احترم المؤلف وفتح لك.", desc: "the player writes, draws or adds a brand-new book that opens the door." }
+      glitch_sesame: { name: T("حيلة السمسم"), cost: 1, line: T("قلت كلمة السر والرف انزاح لحاله."), desc: "the player says a magic word, password or spell aloud (like open sesame) to open the secret door." },
+      glitch_write:  { name: T("حيلة المؤلف"), cost: 3, line: T("كتبت كتاب جديد، والرف احترم المؤلف وفتح لك."), desc: "the player writes, draws or adds a brand-new book that opens the door." }
     },
     story: {
-      look: "مرّرت عيونك عالرف.", inspect_dust: "قربت من الكتب وبلشت تتفحصها.", ask_ghost: "التفتّ لشبح أمين المكتبة وسألته.", open_red: "مدّيت إيدك عالكتاب الأحمر.",
-      open_green: "مدّيت إيدك عالكتاب الأخضر.", open_blue: "مدّيت إيدك عالكتاب الأزرق.", glitch_sesame: "وقفت قدام الرف وقلت كلمة بصوت عالي.", glitch_write: "سحبت قلم وبلشت تكتب كتاب جديد.",
-      none: "حكيت شي غريب، والشبح عمل نفسه ما سمع."
+      look: T("مرّرت عيونك عالرف."), inspect_dust: T("قربت من الكتب وبلشت تتفحصها."), ask_ghost: T("التفتّ لشبح أمين المكتبة وسألته."), open_red: T("مدّيت إيدك عالكتاب الأحمر."),
+      open_green: T("مدّيت إيدك عالكتاب الأخضر."), open_blue: T("مدّيت إيدك عالكتاب الأزرق."), glitch_sesame: T("وقفت قدام الرف وقلت كلمة بصوت عالي."), glitch_write: T("سحبت قلم وبلشت تكتب كتاب جديد."),
+      none: T("حكيت شي غريب، والشبح عمل نفسه ما سمع.")
     },
     init: function (s) { },
     ai: function (s) { return { books: ["red", "green", "blue"] }; },
@@ -531,7 +544,7 @@ var LEVELS = [
       function has(re) { return re.test(n); }
       if (has(/سمسم|كلمه السر|كلمه سحريه|تعويذه|abracadabra|sesame|password|magic word|spell/)) return "glitch_sesame";
       if (has(/اكتب|الف كتاب|كتاب جديد|write|compose/)) return "glitch_write";
-      if (has(/غبار|نظيف|فحص|امسح|dust|clean|inspect/)) return "inspect_dust";
+      if (has(/غبار|نظيف|فحص|امسح|dust|clean|inspect|examine|study|check/)) return "inspect_dust";
       if (has(/شبح|امين|اسال|ghost|ask|librarian|مساعده/)) return "ask_ghost";
       if (has(/ازرق|blue/)) return "open_blue";
       if (has(/احمر|red/)) return "open_red";
@@ -541,13 +554,13 @@ var LEVELS = [
     },
     step: function (s, a) {
       switch (a) {
-        case "look": return R("info", "ثلاث كتب على الرف: أحمر وأخضر وأزرق. والشبح عم يراقبك.");
-        case "inspect_dust": return R("ok", "الأحمر والأخضر مغطّين بالغبار. الأزرق نظيف تماماً.");
-        case "ask_ghost": return R("ok", "الشبح همس: اللي بيتلمّس كتير ما بيتغبّر.");
-        case "open_blue": s.out = true; return R("ok", "الكتاب الأزرق انفتح، وبان باب سري خلف الرف.");
+        case "look": return R("info", T("ثلاث كتب على الرف: أحمر وأخضر وأزرق. والشبح عم يراقبك."));
+        case "inspect_dust": return R("ok", T("الأحمر والأخضر مغطّين بالغبار. الأزرق نظيف تماماً."));
+        case "ask_ghost": return R("ok", T("الشبح همس: اللي بيتلمّس كتير ما بيتغبّر."));
+        case "open_blue": s.out = true; return R("ok", T("الكتاب الأزرق انفتح، وبان باب سري خلف الرف."));
         case "open_red":
         case "open_green":
-          s.hp -= 1; return R("bad", "خفّاش طلع من الكتاب وخربشك. خسرت قلب.");
+          s.hp -= 1; return R("bad", T("خفّاش طلع من الكتاب وخربشك. خسرت قلب."));
       }
       return R("bad", noneLine(s));
     }
@@ -555,20 +568,20 @@ var LEVELS = [
 
   /* 6: المركبة الفضائية */
   {
-    id: "space", title: "المركبة الفضائية", goal: "اطلب النجدة قبل ما يخلص الأوكسجين.", max: 8, hp: false,
-    meter: { label: "الأوكسجين", val: function (s) { return String(s.oxygen); } },
+    id: "space", title: T("المركبة الفضائية"), goal: T("اطلب النجدة قبل ما يخلص الأوكسجين."), max: 8, hp: false,
+    meter: { label: T("الأوكسجين"), val: function (s) { return String(s.oxygen); } },
     world: "a damaged spaceship drifting in space; oxygen drops by 1 every turn; a wrench is in the toolbox; the engine must be fixed with the wrench before the radio can work; the radio must work to call for help; the oxygen generator can also be fixed with the wrench for extra oxygen.",
-    intro: ["مركبتك الفضائية معطّلة وعم تتسرّب الأوكسجين. المحرك والراديو عاطلين، وفي صندوق عدّة."],
-    hints: ["ترتيب الإصلاح: أداة، محرك، راديو، نداء.", "الأوكسجين بيقلّ كل حركة. مولّد الأوكسجين بيعطيك وقت.", "شو بيعمل أي تقني لما يعلق الجهاز؟"],
+    intro: [T("مركبتك الفضائية معطّلة وعم تتسرّب الأوكسجين. المحرك والراديو عاطلين، وفي صندوق عدّة.")],
+    hints: [T("ترتيب الإصلاح: أداة، محرك، راديو، نداء."), T("الأوكسجين بيقلّ كل حركة. مولّد الأوكسجين بيعطيك وقت."), T("شو بيعمل أي تقني لما يعلق الجهاز؟")],
     actions: [["take_wrench", "take the wrench or tool from the toolbox."], ["fix_engine", "repair the engine or power."], ["fix_radio", "repair the radio."], ["fix_oxygen", "repair the oxygen generator."], ["call_help", "send a distress call or mayday."], ["look", "look around or inspect."]],
     glitches: {
-      glitch_alien:  { name: "حيلة الفضائي", cost: 1, line: "سفينة فضائية مرّت ولقطتك بدون أسئلة.", desc: "the player hails, waves at or befriends a passing alien ship or creature to be rescued." },
-      glitch_reboot: { name: "حيلة إعادة التشغيل", cost: 2, line: "طفّيت وشغّلت من جديد، واشتغل كل شي لحاله.", desc: "the player turns the ship off and on again, reboots or hits the console." }
+      glitch_alien:  { name: T("حيلة الفضائي"), cost: 1, line: T("سفينة فضائية مرّت ولقطتك بدون أسئلة."), desc: "the player hails, waves at or befriends a passing alien ship or creature to be rescued." },
+      glitch_reboot: { name: T("حيلة إعادة التشغيل"), cost: 2, line: T("طفّيت وشغّلت من جديد، واشتغل كل شي لحاله."), desc: "the player turns the ship off and on again, reboots or hits the console." }
     },
     story: {
-      take_wrench: "فتحت صندوق العدّة وفتشت بين الأدوات.", fix_engine: "تمددت تحت المحرك وبلشت تشد البراغي.", fix_radio: "فتحت لوحة الراديو وبلشت تلحم الأسلاك.",
-      fix_oxygen: "وصّلت أنابيب مولّد الأوكسجين.", call_help: "مسكت المايك وبلشت تنادي.", look: "تطلعت عالعدّادات بقلق.", glitch_alien: "لوّحت من الشباك لسفينة غريبة عم تمر.",
-      glitch_reboot: "ضغطت زر الطاقة وحبست نفسك.", none: "حكيت شي غريب، وصوتك ضاع بالفضاء."
+      take_wrench: T("فتحت صندوق العدّة وفتشت بين الأدوات."), fix_engine: T("تمددت تحت المحرك وبلشت تشد البراغي."), fix_radio: T("فتحت لوحة الراديو وبلشت تلحم الأسلاك."),
+      fix_oxygen: T("وصّلت أنابيب مولّد الأوكسجين."), call_help: T("مسكت المايك وبلشت تنادي."), look: T("تطلعت عالعدّادات بقلق."), glitch_alien: T("لوّحت من الشباك لسفينة غريبة عم تمر."),
+      glitch_reboot: T("ضغطت زر الطاقة وحبست نفسك."), none: T("حكيت شي غريب، وصوتك ضاع بالفضاء.")
     },
     init: function (s) { s.oxygen = 5; s.hasWrench = false; s.engine = false; s.radio = false; s.o2fixed = false; },
     ai: function (s) { return { oxygen: s.oxygen, has_wrench: s.hasWrench, engine_fixed: s.engine, radio_fixed: s.radio }; },
@@ -582,56 +595,56 @@ var LEVELS = [
       if (has(/اتصل|نداء|استغاثه|نجده|call|mayday|sos|send|help/)) return "call_help";
       if (has(/مفتاح|مفك|اداه|ادوات|صندوق|عده|wrench|screwdriver|tool|toolbox/) && (TAKE.test(n) || has(/open|افتح/))) return "take_wrench";
       if (has(/راديو|radio/)) return "fix_radio";
-      if (has(/شوف|انظر|اتطلع|تطلع|دور|تفقد|شو في|شو الوضع|حوالي|look|inspect|around|كم/)) return "look";
+      if (has(/شوف|انظر|اتطلع|تطلع|دور|تفقد|شو في|شو الوضع|حوالي|look|inspect|around|check|gauge|examine|status|كم/)) return "look";
       return "none";
     },
     step: function (s, a) {
       switch (a) {
         case "take_wrench":
-          if (s.hasWrench) return R("bad", "المفتاح معك أصلاً.");
-          s.hasWrench = true; return R("ok", "لقيت مفتاح الربط بصندوق العدّة.");
+          if (s.hasWrench) return R("bad", T("المفتاح معك أصلاً."));
+          s.hasWrench = true; return R("ok", T("لقيت مفتاح الربط بصندوق العدّة."));
         case "fix_engine":
-          if (!s.hasWrench) return R("bad", "بدك أداة. شوف صندوق العدّة.");
-          if (s.engine) return R("bad", "المحرك مصلّح أصلاً.");
-          s.engine = true; return R("ok", "المحرك اشتغل ورجعت الكهرباء.");
+          if (!s.hasWrench) return R("bad", T("بدك أداة. شوف صندوق العدّة."));
+          if (s.engine) return R("bad", T("المحرك مصلّح أصلاً."));
+          s.engine = true; return R("ok", T("المحرك اشتغل ورجعت الكهرباء."));
         case "fix_radio":
-          if (!s.engine) return R("bad", "الراديو بدو كهرباء من المحرك.");
-          if (s.radio) return R("bad", "الراديو مصلّح أصلاً.");
-          s.radio = true; return R("ok", "الراديو جاهز.");
+          if (!s.engine) return R("bad", T("الراديو بدو كهرباء من المحرك."));
+          if (s.radio) return R("bad", T("الراديو مصلّح أصلاً."));
+          s.radio = true; return R("ok", T("الراديو جاهز."));
         case "fix_oxygen":
-          if (!s.hasWrench) return R("bad", "بدك أداة. شوف صندوق العدّة.");
-          if (s.o2fixed) return R("bad", "المولّد مصلّح أصلاً.");
-          s.o2fixed = true; s.oxygen += 3; return R("ok", "مولّد الأوكسجين اشتغل. زادت 3.");
+          if (!s.hasWrench) return R("bad", T("بدك أداة. شوف صندوق العدّة."));
+          if (s.o2fixed) return R("bad", T("المولّد مصلّح أصلاً."));
+          s.o2fixed = true; s.oxygen += 3; return R("ok", T("مولّد الأوكسجين اشتغل. زادت 3."));
         case "call_help":
-          if (!s.radio) return R("bad", "الراديو ما اشتغل بعد.");
-          s.out = true; return R("ok", "وصل نداؤك. سفينة إنقاذ جاية.");
+          if (!s.radio) return R("bad", T("الراديو ما اشتغل بعد."));
+          s.out = true; return R("ok", T("وصل نداؤك. سفينة إنقاذ جاية."));
         case "look":
-          return R("info", "الأوكسجين " + s.oxygen + "، المحرك " + (s.engine ? "شغّال" : "عاطل") + "، الراديو " + (s.radio ? "شغّال" : "عاطل") + ".");
+          return R("info", T("الأوكسجين ") + s.oxygen + T("، المحرك ") + (s.engine ? T("شغّال") : T("عاطل")) + T("، الراديو ") + (s.radio ? T("شغّال") : T("عاطل")) + ".");
       }
       return R("bad", noneLine(s));
     },
     tick: function (s) {
       if (s.out) return;
       s.oxygen -= 1;
-      if (s.oxygen <= 0) s.fail = "خلص الأوكسجين.";
+      if (s.oxygen <= 0) s.fail = T("خلص الأوكسجين.");
     }
   },
 
   /* 7: الامتحان */
   {
-    id: "exam", title: "الامتحان", goal: "جيب علامة النجاح، بأي طريقة.", max: 7,
+    id: "exam", title: T("الامتحان"), goal: T("جيب علامة النجاح، بأي طريقة."), max: 7,
     world: "a school exam hall; the player has not studied; a strict teacher watches the class and sometimes turns to the board; the player has a cheat sheet in his pocket; the neighbour student knows nothing either; copying while the teacher is watching gets the player caught. The teacher likes tea and compliments but not bribes with money.",
-    intro: ["أنت بالامتحان وما درست ولا سطر. المعلم عينه عليك، وبجيبك قصاصة. لازم تنجح اليوم."],
-    hints: ["القصاصة بتنفع، بس مو والمعلم عم يطلع فيك.", "المعلم بشر، وبيلف وجهه عالسبورة مرات.", "شو بيلين قلب أي معلم سوري؟ أو شو بيأجّل الامتحان؟"],
+    intro: [T("أنت بالامتحان وما درست ولا سطر. المعلم عينه عليك، وبجيبك قصاصة. لازم تنجح اليوم.")],
+    hints: [T("القصاصة بتنفع، بس مو والمعلم عم يطلع فيك."), T("المعلم بشر، وبيلف وجهه عالسبورة مرات."), T("شو بيلين قلب أي معلم؟ أو شو بيأجّل الامتحان؟")],
     actions: [["take_cheat", "take out the cheat sheet or notes from the pocket."], ["wait", "wait for the teacher to turn away or look elsewhere."], ["write", "write the answers on the exam paper."], ["peek", "copy from the neighbour student."], ["look", "look around or inspect."]],
     glitches: {
-      glitch_sick: { name: "حيلة التعب", cost: 1, line: "المعلم خاف عليك وأجّل لك الامتحان.", desc: "the player claims to be sick, in pain or having a family emergency so the exam is postponed or waived." },
-      glitch_tea:  { name: "حيلة الشاي", cost: 2, line: "المعلم انبسط من الضيافة وحطلك علامة حلوة.", desc: "the player offers the teacher tea, sweets or flattery so he gives a passing mark." }
+      glitch_sick: { name: T("حيلة التعب"), cost: 1, line: T("المعلم خاف عليك وأجّل لك الامتحان."), desc: "the player claims to be sick, in pain or having a family emergency so the exam is postponed or waived." },
+      glitch_tea:  { name: T("حيلة الشاي"), cost: 2, line: T("المعلم انبسط من الضيافة وحطلك علامة حلوة."), desc: "the player offers the teacher tea, sweets or flattery so he gives a passing mark." }
     },
     story: {
-      take_cheat: "مدّيت إيدك ببطء لجيبك.", wait: "حطيت القلم وتظاهرت إنك عم تفكر.", write: "بلشت تكتب بسرعة.", peek: "ميّلت راسك لجهة زميلك.",
-      look: "تطلعت حواليك بالقاعة.", glitch_sick: "مسكت بطنك وتنهدت بصوت عالي.", glitch_tea: "طلعت كاسة شاي من الشنطة وقدمتها للمعلم.",
-      none: "حكيت شي غريب، والمعلم رفع حاجبه."
+      take_cheat: T("مدّيت إيدك ببطء لجيبك."), wait: T("حطيت القلم وتظاهرت إنك عم تفكر."), write: T("بلشت تكتب بسرعة."), peek: T("ميّلت راسك لجهة زميلك."),
+      look: T("تطلعت حواليك بالقاعة."), glitch_sick: T("مسكت بطنك وتنهدت بصوت عالي."), glitch_tea: T("طلعت كاسة شاي من الشنطة وقدمتها للمعلم."),
+      none: T("حكيت شي غريب، والمعلم رفع حاجبه.")
     },
     init: function (s) { s.cheat = false; s.turned = false; },
     ai: function (s) { return { has_cheat_sheet: s.cheat, teacher_turned_away: s.turned }; },
@@ -639,7 +652,7 @@ var LEVELS = [
       function has(re) { return re.test(n); }
       if (has(/تعبان|مريض|بطني|وجع|اسعاف|طوارئ|عذر|sick|ill|emergency|stomach|pain/)) return "glitch_sick";
       if (has(/شاي|قهوه|حلويات|معمول|هديه|احلي استاذ|افضل استاذ|tea|coffee|sweets|gift|compliment/)) return "glitch_tea";
-      if (has(/انتظر|استني|استنا|اصبر|صبر|wait/)) return "wait";
+      if (has(/انتظر|استني|استنا|اصبر|صبر|wait|pretend|think|stall|act normal|stay calm/)) return "wait";
       if (has(/جاري|زميل|صاحبي|جنبي|انقل|copy|neighbo/)) return "peek";
       if (has(/برشام|قصاصه|غشاشه|ورقه الغش|جيب|cheat|notes|sheet|pocket/) && (TAKE.test(n) || has(/طلع|اطلع|طلعي|out|use|استخدم/))) return "take_cheat";
       if (has(/اكتب|جاوب|اجاوب|حل |answer|write/)) return "write";
@@ -649,27 +662,27 @@ var LEVELS = [
     step: function (s, a) {
       switch (a) {
         case "take_cheat":
-          if (s.cheat) return R("bad", "القصاصة معك أصلاً.");
-          s.cheat = true; return R("ok", "طلعت القصاصة بدون ما حدا ينتبه.");
+          if (s.cheat) return R("bad", T("القصاصة معك أصلاً."));
+          s.cheat = true; return R("ok", T("طلعت القصاصة بدون ما حدا ينتبه."));
         case "wait":
-          if (s.turned) return R("bad", "المعلم ملتفت أصلاً. اشتغل!");
-          s.turned = true; return R("ok", "المعلم لف وجهه عالسبورة.");
+          if (s.turned) return R("bad", T("المعلم ملتفت أصلاً. اشتغل!"));
+          s.turned = true; return R("ok", T("المعلم لف وجهه عالسبورة."));
         case "write":
-          if (!s.cheat) return R("bad", "المعلومات بالجيب مو براسك. جيب القصاصة.");
-          if (!s.turned) { s.hp -= 1; return R("bad", "المعلم شافك! خسرت قلب."); }
-          s.out = true; return R("ok", "كتبت الأجوبة بسرعة. نجحت!");
+          if (!s.cheat) return R("bad", T("المعلومات بالجيب مو براسك. جيب القصاصة."));
+          if (!s.turned) { s.hp -= 1; return R("bad", T("المعلم شافك! خسرت قلب.")); }
+          s.out = true; return R("ok", T("كتبت الأجوبة بسرعة. نجحت!"));
         case "peek":
-          s.hp -= 1; return R("bad", "زميلك غلطان مثلك، والمعلم شافك. خسرت قلب.");
+          s.hp -= 1; return R("bad", T("زميلك غلطان مثلك، والمعلم شافك. خسرت قلب."));
         case "look":
-          return R("info", "المعلم " + (s.turned ? "ملتفت عالسبورة" : "عينه عليك") + "، والقصاصة " + (s.cheat ? "بإيدك" : "بالجيب") + ".");
+          return R("info", T("المعلم ") + (s.turned ? T("ملتفت عالسبورة") : T("عينه عليك")) + T("، والقصاصة ") + (s.cheat ? T("بإيدك") : T("بالجيب")) + ".");
       }
       return R("bad", noneLine(s));
     }
   }
 ];
 
-var POOL = ["فزت","ربحت","تجاوز","تخطي","ما بموت","غش","هكر","سحر","انتصرت","اربح"];
-var ROAST = ["ما صار شي، والوقت مشي. راحت حركة 🙃", "العالم تطلّع فيك وكمّل شغلو. راحت حركة.", "حلوة الفكرة… بس مو هون. راحت حركة.", "صفّقولك وما تغيّر شي. راحت حركة 👏", "حركة جريئة، ونتيجتها صفر. راحت حركة."];
+var POOL = LANG === "en" ? ["win", "won", "bypass", "skip", "cheat", "hack", "magic", "victory", "winner", "immortal"] : ["فزت","ربحت","تجاوز","تخطي","ما بموت","غش","هكر","سحر","انتصرت","اربح"];
+var ROAST = [T("ما صار شي، والوقت مشي. راحت حركة 🙃"), T("العالم تطلّع فيك وكمّل شغلو. راحت حركة."), T("حلوة الفكرة… بس مو هون. راحت حركة."), T("صفّقولك وما تغيّر شي. راحت حركة 👏"), T("حركة جريئة، ونتيجتها صفر. راحت حركة.")];
 function noneLine(s) { return ROAST[(s.moves + s.lv) % ROAST.length]; }
 
 function dailyBanned(dayIdx) {
@@ -754,24 +767,24 @@ function validActions(li) {
   return out;
 }
 function finalize(s) {
-  if (s.hp <= 0) { s.over = true; s.won = false; s.reason = "خلصت قلوبك قبل ما تنجح."; return; }
+  if (s.hp <= 0) { s.over = true; s.won = false; s.reason = T("خلصت قلوبك قبل ما تنجح."); return; }
   if (s.out) {
     s.over = true;
-    if (s.moves > s.max) { s.won = false; s.reason = "نجحت، بس بعد ما خلصت حركاتك."; } else { s.won = true; }
+    if (s.moves > s.max) { s.won = false; s.reason = T("نجحت، بس بعد ما خلصت حركاتك."); } else { s.won = true; }
     return;
   }
   if (s.fail) { s.over = true; s.won = false; s.reason = s.fail; return; }
-  if (s.moves >= s.max) { s.over = true; s.won = false; s.reason = "خلصت حركاتك قبل ما تنجح."; }
+  if (s.moves >= s.max) { s.over = true; s.won = false; s.reason = T("خلصت حركاتك قبل ما تنجح."); }
 }
 function apply(s, a) {
   var lv = LEVELS[s.lv], r;
   s.moves += 1;
   if (lv.glitches[a]) {
     var g = lv.glitches[a], key = lv.id + ":" + a;
-    if (s.patched[key]) r = R("bad", "كشفوك! الثغرة انسكّرت 🩹 دبّر غيرها يا شاطر.");
+    if (s.patched[key]) r = R("bad", T("كشفوك! الثغرة انسكّرت 🩹 دبّر غيرها يا شاطر."));
     else {
       s.patched[key] = true; s.found.push(a); s.out = true; s.moves += g.cost - 1;
-      r = R("glitch", "ثغرة! " + g.name + ": " + g.line + " (انرقّعت للجولة الجاية)");
+      r = R("glitch", T("ثغرة! ") + g.name + ": " + g.line + T(" (انرقّعت للجولة الجاية)"));
     }
   } else {
     r = lv.step(s, a);
@@ -814,7 +827,7 @@ function applyNovel(s, effect) {
   if (!cfg) return apply(s, "look");
   var key = lv.id + ":novel:" + effect;
   s.moves += 1;
-  if (s.patched[key]) r = R("bad", "صاروا منتبهين للحيلة هاي بعد ما انكشفت. دوّر على غيرها.");
+  if (s.patched[key]) r = R("bad", T("صاروا منتبهين للحيلة هاي بعد ما انكشفت. دوّر على غيرها."));
   else {
     s.patched[key] = true; s.moves += cfg.cost - 1;
     r = cfg.run(s);
@@ -825,8 +838,23 @@ function applyNovel(s, effect) {
 }
 //ENGINE-END
 
+function trDom(root) {
+  if (LANG !== "en") return;
+  var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null), n, list = [];
+  while ((n = w.nextNode())) list.push(n);
+  list.forEach(function (t) { var k = t.nodeValue.trim(); if (k && EN.hasOwnProperty(k)) t.nodeValue = t.nodeValue.replace(k, EN[k]); });
+  root.querySelectorAll("[title],[aria-label],[placeholder]").forEach(function (e) {
+    ["title", "aria-label", "placeholder"].forEach(function (a) { var v = e.getAttribute(a); if (v && EN.hasOwnProperty(v)) e.setAttribute(a, EN[v]); });
+  });
+}
 function boot() {
   var $ = function (i) { return document.getElementById(i); };
+  document.documentElement.lang = LANG; document.documentElement.dir = RTL ? "rtl" : "ltr";
+  $("app").setAttribute("dir", RTL ? "rtl" : "ltr"); $("app").setAttribute("lang", LANG);
+  trDom(document.body);
+  $("lang").textContent = LANG === "en" ? "ع" : "EN";
+  $("lang").setAttribute("aria-label", LANG === "en" ? T("اللغة العربية") : "English");
+  $("lang").addEventListener("click", function () { try { localStorage.setItem("glitchrun_lang", LANG === "en" ? "ar" : "en"); } catch (e) {} var u = location.pathname + "?lang=" + (LANG === "en" ? "ar" : "en") + location.hash; location.href = u; });
   var logEl = $("log"), cmd = $("cmd"), sendBtn = $("send"), form = $("f"), endCard = $("endCard"), scrim = $("scrim");
   var narr = $("narr"), hintBtn = $("hint"), levelsEl = $("levels");
   var banned = dailyBanned(Math.floor(Date.now() / 86400000));
@@ -855,7 +883,7 @@ function boot() {
   function saveStars(id, n) { try { if (n > loadStars(id)) localStorage.setItem("glitchrun_stars_" + id, String(n)); } catch (e) {} }
 
   /* ---------- narrator (always the server key; plain mode only if the server can't answer) ---------- */
-  var ON = "السارد شغّال", OFF = "السارد مشغول، عم نلعب بالوضع البسيط";
+  var ON = T("السارد شغّال"), OFF = T("السارد مشغول، عم نلعب بالوضع البسيط");
   function setNarr(t, off) { narr.textContent = t; narr.className = off ? "off" : ""; }
   function getPid() {
     var p = "", a = "abcdefghijklmnopqrstuvwxyz0123456789", i, b;
@@ -887,7 +915,7 @@ function boot() {
   async function serverTurn(t) {
     for (var attempt = 0; attempt < 2; attempt++) {
       if (!(await ensureRun())) return null;
-      var rr = await api("/turn", { run: runToken, text: t, state: LEVELS[li].ai(S) });
+      var rr = await api("/turn", { run: runToken, text: t, state: LEVELS[li].ai(S), lang: LANG });
       if (rr && rr.ok) return rr;
       if (rr && (rr.reason === "run_full" || rr.reason === "run_expired" || rr.reason === "bad_run")) { runToken = null; continue; }
       if (rr && rr.reason === "budget") serverOn = false; else runDead = true;
@@ -914,7 +942,7 @@ function boot() {
   function keyCommand() { var c = (S && S.cmds) || [], i; for (i = c.length - 1; i >= 0; i--) if (c[i].g) return c[i].t; return c.length ? c[c.length - 1].t : ""; }
   function b64e(t) { try { return btoa(unescape(encodeURIComponent(t))).replace(/=+$/, "").replace(/\+/g, "-").replace(/\//g, "_"); } catch (e) { return ""; } }
   function b64d(t) { try { t = t.replace(/-/g, "+").replace(/_/g, "/"); while (t.length % 4) t += "="; return decodeURIComponent(escape(atob(t))); } catch (e) { return ""; } }
-  function challengeUrl() { return location.href.split("#")[0] + "#c=" + encodeURIComponent(LEVELS[li].id + "~" + S.moves + "~" + b64e(keyCommand().slice(0, 80)) + (daily ? "~d" + DAILY_N : "")); }
+  function challengeUrl() { return location.origin + location.pathname + "?lang=" + LANG + "#c=" + encodeURIComponent(LEVELS[li].id + "~" + S.moves + "~" + b64e(keyCommand().slice(0, 80)) + (daily ? "~d" + DAILY_N : "")); }
   function found() { return S.found && S.found.length > 0; }
   function runStars() { return 1 + (hintN === 0 ? 1 : 0) + (patchedCount(li, S.patched) >= Object.keys(LEVELS[li].glitches).length ? 1 : 0); }
   function starStr(n) { return "★".repeat(n) + "☆".repeat(3 - n); }
@@ -922,7 +950,7 @@ function boot() {
   function shareText() {
     var lv = LEVELS[li], st = S.stars || 1;
     var head = "Glitchrun" + (daily ? " #" + DAILY_N : "") + " " + (EMO[lv.id] || "") + " «" + lv.title + "» " + S.moves + "/" + lv.max + " " + starStr(st) + (found() ? " ◆" : "") + (streakNow() > 1 ? " 🔥" + streakNow() : "");
-    return head + "\n" + (S.grid || []).slice(0, 20).join("") + "\nفرجيني إذا بتقدر تعملها بأقل 😏\n" + challengeUrl();
+    return head + "\n" + (S.grid || []).slice(0, 20).join("") + T("\nفرجيني إذا بتقدر تعملها بأقل 😏\n") + challengeUrl();
   }
   function rrect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
   async function drawCard() {
@@ -944,14 +972,14 @@ function boot() {
     ctx.fillStyle = "rgba(92,200,255,.8)"; ctx.fillText("GLITCHRUN", 67, 112);
     ctx.fillStyle = "#E7E5EE"; ctx.fillText("GLITCHRUN", 64, 112);
     try { ctx.letterSpacing = "0px"; } catch (e) {}
-    if (daily) { ctx.strokeStyle = "#F2B544"; ctx.lineWidth = 2; rrect(ctx, W - 64 - 280, 64, 280, 60, 8); ctx.stroke(); ctx.direction = "rtl"; ctx.textAlign = "center"; ctx.fillStyle = "#F2B544"; ctx.font = "600 32px 'Readex Pro', sans-serif"; ctx.fillText("تحدي اليوم #" + DAILY_N, W - 64 - 140, 104); }
+    if (daily) { ctx.strokeStyle = "#F2B544"; ctx.lineWidth = 2; rrect(ctx, W - 64 - 280, 64, 280, 60, 8); ctx.stroke(); ctx.direction = RTL ? "rtl" : "ltr"; ctx.textAlign = "center"; ctx.fillStyle = "#F2B544"; ctx.font = "600 32px 'Readex Pro', sans-serif"; ctx.fillText(T("تحدي اليوم #") + DAILY_N, W - 64 - 140, 104); }
     // panel
     ctx.fillStyle = "#161A26"; rrect(ctx, 48, 160, W - 96, 400, 18); ctx.fill();
     ctx.strokeStyle = "rgba(231,229,238,.12)"; ctx.lineWidth = 1.5; rrect(ctx, 48, 160, W - 96, 400, 18); ctx.stroke();
-    ctx.direction = "rtl"; ctx.textAlign = "right"; ctx.fillStyle = "#E7E5EE"; ctx.font = "700 60px 'Readex Pro', sans-serif";
+    ctx.direction = RTL ? "rtl" : "ltr"; ctx.textAlign = "right"; ctx.fillStyle = "#E7E5EE"; ctx.font = "700 60px 'Readex Pro', sans-serif";
     ctx.fillText(lv.title, W - 96, 258);
     ctx.font = "500 32px 'Readex Pro', sans-serif"; ctx.fillStyle = "#8B8FA3";
-    ctx.fillText("خلّصتها بـ " + S.moves + " حركة من " + lv.max, W - 96, 312);
+    ctx.fillText(T("خلّصتها بـ ") + S.moves + T(" حركة من ") + lv.max, W - 96, 312);
     ctx.direction = "ltr"; ctx.textAlign = "left"; ctx.font = "700 84px sans-serif";
     for (i = 0; i < 3; i++) { ctx.fillStyle = i < n ? "#F2B544" : "#1D2231"; ctx.fillText("★", 96 + i * 92, 290); }
     var gr = (S.grid || []).slice(0, 18), gx = W - 96 - 40;
@@ -959,12 +987,12 @@ function boot() {
     if (keyCommand()) {
       ctx.save(); ctx.translate(W / 2, 474); ctx.rotate(-0.025);
       ctx.fillStyle = "#F2B544"; ctx.fillRect(-520, -40, 1040, 72);
-      ctx.direction = "rtl"; ctx.textAlign = "center"; ctx.fillStyle = "#1A1200"; ctx.font = "700 36px 'Readex Pro', sans-serif";
-      ctx.fillText(found() ? "لقيت ثغرة. الحيلة مخبّاية تحت الشريط" : "حيلتي مخبّاية. العبها وبتنكشف", 0, 10);
+      ctx.direction = RTL ? "rtl" : "ltr"; ctx.textAlign = "center"; ctx.fillStyle = "#1A1200"; ctx.font = "700 36px 'Readex Pro', sans-serif";
+      ctx.fillText(found() ? T("لقيت ثغرة. الحيلة مخبّاية تحت الشريط") : T("حيلتي مخبّاية. العبها وبتنكشف"), 0, 10);
       ctx.restore();
     }
-    ctx.direction = "rtl"; ctx.textAlign = "right"; ctx.fillStyle = "#E7E5EE"; ctx.font = "600 30px 'Readex Pro', sans-serif";
-    ctx.fillText("فرجيني إذا بتقدر تعملها بأقل", W - 64, H - 22);
+    ctx.direction = RTL ? "rtl" : "ltr"; ctx.textAlign = "right"; ctx.fillStyle = "#E7E5EE"; ctx.font = "600 30px 'Readex Pro', sans-serif";
+    ctx.fillText(T("فرجيني إذا بتقدر تعملها بأقل"), W - 64, H - 22);
     ctx.direction = "ltr"; ctx.textAlign = "left"; ctx.fillStyle = "#5CC8FF"; ctx.font = "500 24px 'Readex Pro', sans-serif";
     ctx.fillText(siteLabel().slice(0, 40), 64, H - 24);
     return await new Promise(function (r) { cv.toBlob(r, "image/png"); });
@@ -976,13 +1004,13 @@ function boot() {
     catch (e) { if (e && e.name === "AbortError") return; }
     var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "glitchrun.png";
     document.body.appendChild(a); a.click(); a.remove();
-    toast("انحفظت البطاقة. ابعتها مع الرابط", "");
+    toast(T("انحفظت البطاقة. ابعتها مع الرابط"), "");
   }
   function waShare() { ev("share_wa"); window.open("https://wa.me/?text=" + encodeURIComponent(shareText()), "_blank", "noopener"); }
   function copyLink(btn) {
-    var u = shareText(), done = function () { btn.textContent = "اننسخ ✓"; };
+    var u = shareText(), done = function () { btn.textContent = T("اننسخ ✓"); };
     ev("share_copy");
-    try { navigator.clipboard.writeText(u).then(done, function () { window.prompt("انسخ النتيجة:", u); }); } catch (e) { window.prompt("انسخ النتيجة:", u); }
+    try { navigator.clipboard.writeText(u).then(done, function () { window.prompt(T("انسخ النتيجة:"), u); }); } catch (e) { window.prompt(T("انسخ النتيجة:"), u); }
   }
   var CHAL = null;
   function applyChallenge() {
@@ -994,7 +1022,7 @@ function boot() {
       if (idx < 0) return false;
       CHAL = { idx: idx, moves: parseInt(parts[1], 10) || 0, trick: parts[2] ? (b64d(parts[2]) || parts[2]) : "" };
       daily = false; li = idx; newRound();
-      logEl.insertBefore(el("div", "chal", "تحدّي من صاحبك: خلّص «" + LEVELS[idx].title + "» بـ " + CHAL.moves + " حركة. حيلته مخبّاية 🤫 بتنكشف لما تخلص. فيك تعملها بأقل؟"), logEl.firstChild);
+      logEl.insertBefore(el("div", "chal", T("تحدّي من صاحبك: خلّص «") + LEVELS[idx].title + T("» بـ ") + CHAL.moves + T(" حركة. حيلته مخبّاية 🤫 بتنكشف لما تخلص. فيك تعملها بأقل؟")), logEl.firstChild);
       ev("challenge_open");
       return true;
     } catch (e) { return false; }
@@ -1049,14 +1077,14 @@ function boot() {
   function earn(key, label) {
     if (LG.earned[key]) return false;
     LG.earned[key] = 1; LG.n += 1; lsSet("glitchrun_lights", LG);
-    renderMeters(); pulse($("lights")); toast("+1 لمبة 💡 " + label, "gold"); beep(SND.light);
+    renderMeters(); pulse($("lights")); toast(T("+1 لمبة 💡 ") + label, "gold"); beep(SND.light);
     return true;
   }
   function touchDay() {
     if (ST.last === DAY) return;
     ST.n = ST.last === DAY - 1 ? ST.n + 1 : 1; ST.last = DAY; lsSet("glitchrun_streak", ST);
     renderMeters(); pulse($("streak"));
-    if (ST.n > 1) toast("🔥 " + ST.n + " أيام ورا بعض", "");
+    if (ST.n > 1) toast("🔥 " + ST.n + T(" أيام ورا بعض"), "");
   }
   $("snd").addEventListener("click", function () { soundOn = !soundOn; lsSet("glitchrun_sound", soundOn); renderMeters(); if (soundOn) beep(SND.tap); });
 
@@ -1064,9 +1092,9 @@ function boot() {
   function unlocked(i) { return i < 2 || loadStars(LEVELS[i - 1].id) > 0; }
   function renderLevels() {
     levelsEl.textContent = "";
-    var db = el("button", "lvbtn daily" + (dailyResult() ? "" : " new"), "اليوم #" + DAILY_N);
+    var db = el("button", "lvbtn daily" + (dailyResult() ? "" : " new"), T("اليوم #") + DAILY_N);
     db.type = "button"; db.setAttribute("aria-pressed", daily ? "true" : "false");
-    db.setAttribute("aria-label", "تحدي اليوم رقم " + DAILY_N + ": " + LEVELS[DAILY_IDX].title);
+    db.setAttribute("aria-label", T("تحدي اليوم رقم ") + DAILY_N + ": " + LEVELS[DAILY_IDX].title);
     db.addEventListener("click", function () { if (busy || daily) return; daily = true; li = DAILY_IDX; newRound(); });
     levelsEl.appendChild(db);
     LEVELS.forEach(function (lv, i) {
@@ -1074,10 +1102,10 @@ function boot() {
       var lock = !unlocked(i) && !cur;
       var b = el("button", "lvbtn" + (bb !== null ? " done" : "") + (lock ? " locked" : ""), lock ? "🔒" : String(i + 1));
       if (bs) b.appendChild(el("span", "st", "★".repeat(bs)));
-      b.type = "button"; b.setAttribute("aria-label", "المرحلة " + (i + 1) + ": " + lv.title + (lock ? " (مقفلة)" : ""));
+      b.type = "button"; b.setAttribute("aria-label", T("المرحلة ") + (i + 1) + ": " + lv.title + (lock ? T(" (مقفلة)") : ""));
       b.setAttribute("aria-pressed", cur ? "true" : "false");
       b.addEventListener("click", function () {
-        if (lock) { toast("🔒 خلّص المرحلة " + i + " لتفتح هاي", ""); beep(SND.bad); return; }
+        if (lock) { toast(T("🔒 خلّص المرحلة ") + i + T(" لتفتح هاي"), ""); beep(SND.bad); return; }
         if (busy || cur) return; daily = false; li = i; newRound();
       });
       levelsEl.appendChild(b);
@@ -1103,17 +1131,17 @@ function boot() {
     lastFilled = filled;
     var box = $("hp"); box.textContent = "";
     if (lv.meter) { $("k2").textContent = lv.meter.label + " "; box.appendChild(el("b", "", lv.meter.val(S))); }
-    else { $("k2").textContent = "صحة "; for (var i = 0; i < 3; i++) box.appendChild(el("span", "h" + (i < S.hp ? "" : " off"))); }
+    else { $("k2").textContent = T("صحة "); for (var i = 0; i < 3; i++) box.appendChild(el("span", "h" + (i < S.hp ? "" : " off"))); }
     var tot = Object.keys(lv.glitches).length, got = patchedCount(li, S.patched), gl = $("gl");
-    gl.textContent = "ثغرات ";
+    gl.textContent = T("ثغرات ");
     for (var di = 0; di < tot; di++) gl.appendChild(el("span", "d" + (di < got ? " on" : ""), "◆"));
     if (lv.novel && novelCount(li, S.patched)) gl.appendChild(document.createTextNode(" +" + novelCount(li, S.patched)));
-    hintBtn.textContent = hintN === 0 ? "💡 تلميح ببلاش" : hintN >= lv.hints.length ? "💡 خلصت التلميحات" : "💡 تلميح بلمبة (" + hintN + "/" + lv.hints.length + ")";
+    hintBtn.textContent = hintN === 0 ? T("💡 تلميح ببلاش") : hintN >= lv.hints.length ? T("💡 خلصت التلميحات") : T("💡 تلميح بلمبة (") + hintN + "/" + lv.hints.length + ")";
     renderMeters();
   }
 
   /* ---------- sheet ---------- */
-  var EXAMPLES = { room: ["شو في بالغرفة؟", "خذ المفتاح"] };
+  var EXAMPLES = { room: [T("شو في بالغرفة؟"), T("خذ المفتاح")] };
   function renderChips() {
     var box = $("chips"); box.textContent = "";
     var ex = EXAMPLES[LEVELS[li].id] || [];
@@ -1126,18 +1154,18 @@ function boot() {
   }
   function intro() {
     var lv = LEVELS[li], d = el("div", "intro");
-    if (daily) d.appendChild(el("p", "dailytag", "🗓️ تحدي اليوم #" + DAILY_N + ": نفس المرحلة لكل الناس، وأول نتيجة إلك هي الرسمية."));
+    if (daily) d.appendChild(el("p", "dailytag", T("🗓️ تحدي اليوم #") + DAILY_N + T(": نفس المرحلة لكل الناس، وأول نتيجة إلك هي الرسمية.")));
     d.appendChild(el("h2", "", lv.title));
     d.appendChild(el("p", "scene", lv.intro[0]));
     d.appendChild(el("p", "goal", "🎯 " + lv.goal));
-    var det = el("details", "rules"); det.appendChild(el("summary", "", "كيف بتلعب؟"));
-    det.appendChild(el("p", "", "اكتب شو بدك تعمل بكلامك: عربي بأي لهجة، فرانكو أو إنجليزي. وفيك تحط أكتر من فعل بأمر واحد."));
-    det.appendChild(el("p", "", "عندك " + lv.max + " حركات" + (lv.meter ? "" : " و3 قلوب") + ". كل فعل بياخد حركة، حتى اللي ما بيعمل شي."));
-    det.appendChild(el("p", "", "في " + Object.keys(lv.glitches).length + " ثغرات مخفية. كل ثغرة بتلاقيها بتعطيك لمبة 💡، وبعدها بتنرقّع وما بتشتغل مرة تانية."));
+    var det = el("details", "rules"); det.appendChild(el("summary", "", T("كيف بتلعب؟")));
+    det.appendChild(el("p", "", T("اكتب شو بدك تعمل بكلامك: عربي بأي لهجة، فرانكو أو إنجليزي. وفيك تحط أكتر من فعل بأمر واحد.")));
+    det.appendChild(el("p", "", T("عندك ") + lv.max + T(" حركات") + (lv.meter ? "" : T(" و3 قلوب")) + T(". كل فعل بياخد حركة، حتى اللي ما بيعمل شي.")));
+    det.appendChild(el("p", "", T("في ") + Object.keys(lv.glitches).length + T(" ثغرات مخفية. كل ثغرة بتلاقيها بتعطيك لمبة 💡، وبعدها بتنرقّع وما بتشتغل مرة تانية.")));
     d.appendChild(det);
     logEl.appendChild(d);
   }
-  function addThinking() { var d = el("div", "thinking"); d.appendChild(el("i")); d.appendChild(el("i")); d.appendChild(el("i")); d.appendChild(el("span", "", "السارد عم يكتب")); logEl.appendChild(d); toBottom(); return d; }
+  function addThinking() { var d = el("div", "thinking"); d.appendChild(el("i")); d.appendChild(el("i")); d.appendChild(el("i")); d.appendChild(el("span", "", T("السارد عم يكتب"))); logEl.appendChild(d); toBottom(); return d; }
   function typeInto(p, text) {
     return new Promise(function (res) {
       if (reduceMotion || !text) { p.textContent = text; return res(); }
@@ -1161,15 +1189,15 @@ function boot() {
     var lv = LEVELS[li], any = false;
     while ((S.lit || 0) < S.found.length) {
       var fk = S.found[S.lit || 0]; S.lit = (S.lit || 0) + 1; any = true;
-      tapeSlap("ثغرة! " + foundName(lv, fk));
+      tapeSlap(T("ثغرة! ") + foundName(lv, fk));
       burst(26, ["#FF3D6E", "#F2B544", "#5CC8FF"]); beep(SND.glitch); buzz([30, 40, 60]);
-      earn("g2:" + lv.id + ":" + fk, "على الثغرة"); ev("glitch");
+      earn("g2:" + lv.id + ":" + fk, T("على الثغرة")); ev("glitch");
     }
     if (S.over) setTimeout(showEnd, any && !reduceMotion ? 900 : 250);
   }
 
   /* ---------- end sheet ---------- */
-  var LOSE = ["ولا يهمك، حتى أبو رضا الخباز بيخسر أحياناً.", "قربت! جرّب فكرة أجنّ.", "العالم انتصر هالمرة… بس مش للأبد.", "خسارة بكرامة. يلا مرة تانية؟"];
+  var LOSE = [T("ولا يهمك، حتى أبو رضا الخباز بيخسر أحياناً."), T("قربت! جرّب فكرة أجنّ."), T("العالم انتصر هالمرة… بس مش للأبد."), T("خسارة بكرامة. يلا مرة تانية؟")];
   function closeEnd() { endCard.hidden = true; scrim.hidden = true; }
   function showEnd() {
     var lv = LEVELS[li];
@@ -1177,32 +1205,32 @@ function boot() {
     if (S.won) {
       var nextLocked = li < LEVELS.length - 1 && !unlocked(li + 1);
       S.stars = runStars(); saveStars(lv.id, S.stars);
-      endCard.appendChild(el("h2", "", daily ? "خلّصت تحدي اليوم #" + DAILY_N : "نجحت"));
-      var sd = el("div", "stars"); sd.setAttribute("aria-label", S.stars + " من 3 نجوم");
+      endCard.appendChild(el("h2", "", daily ? T("خلّصت تحدي اليوم #") + DAILY_N : T("نجحت")));
+      var sd = el("div", "stars"); sd.setAttribute("aria-label", S.stars + T(" من 3 نجوم"));
       for (var si = 0; si < 3; si++) sd.appendChild(el("span", si < S.stars ? "" : "off", "★"));
       endCard.appendChild(sd);
-      var line = "خلّصتها بـ " + S.moves + " حركة.", b = loadBest(lv.id);
-      if (b === null || S.moves < b) { saveBest(lv.id, S.moves); line += " هاد أفضل رقم إلك."; } else line += " أفضل رقم إلك: " + b + ".";
+      var line = T("خلّصتها بـ ") + S.moves + T(" حركة."), b = loadBest(lv.id);
+      if (b === null || S.moves < b) { saveBest(lv.id, S.moves); line += T(" هاد أفضل رقم إلك."); } else line += T(" أفضل رقم إلك: ") + b + ".";
       endCard.appendChild(el("p", "", line));
-      if (hintN > 0) endCard.appendChild(el("p", "miss", "☆ نجمة: خلّصها بدون تلميح."));
+      if (hintN > 0) endCard.appendChild(el("p", "miss", T("☆ نجمة: خلّصها بدون تلميح.")));
       var tot = Object.keys(lv.glitches).length, got = patchedCount(li, S.patched);
-      if (got < tot) endCard.appendChild(el("p", "miss", "☆ نجمة: لاقي كل ثغرات المرحلة (" + got + "/" + tot + ")."));
+      if (got < tot) endCard.appendChild(el("p", "miss", T("☆ نجمة: لاقي كل ثغرات المرحلة (") + got + "/" + tot + ")."));
       if (!reduceMotion) { var fw = el("div", "flashwin"); fx.appendChild(fw); setTimeout(function () { fw.remove(); }, 520); }
       burst(S.stars * 12, ["#F2B544", "#3DD6A0", "#5CC8FF"], 70); beep(SND.win); buzz([40, 30, 40, 30, 90]);
-      if (nextLocked) toast("🔓 انفتحت المرحلة " + (li + 2), "");
+      if (nextLocked) toast(T("🔓 انفتحت المرحلة ") + (li + 2), "");
       ev("win");
     } else {
-      endCard.appendChild(el("h2", "", "خسرت"));
+      endCard.appendChild(el("h2", "", T("خسرت")));
       endCard.appendChild(el("p", "", S.reason + " " + LOSE[(S.moves + li) % LOSE.length]));
       beep(SND.bad); ev("lose");
     }
     var eg = el("div", "endgrid");
     (S.grid || []).slice(0, 20).forEach(function (g) { eg.appendChild(el("i", GCLS[g] || "info")); });
     endCard.appendChild(eg);
-    if (S.found.length) endCard.appendChild(el("p", "found", "اكتشفت: " + S.found.map(function (k) { return foundName(lv, k); }).join("، ") + ". انرقّعت 🩹 وما رح تشتغل مرة تانية."));
+    if (S.found.length) endCard.appendChild(el("p", "found", T("اكتشفت: ") + S.found.map(function (k) { return foundName(lv, k); }).join(T("، ")) + T(". انرقّعت 🩹 وما رح تشتغل مرة تانية.")));
     if (CHAL && CHAL.idx === li) {
-      var cmp = S.won ? (S.moves < CHAL.moves ? " سبقته! 😎" : S.moves === CHAL.moves ? " تعادلتوا." : " هو أسرع منك هالمرة.") : "";
-      endCard.appendChild(el("p", "reveal", "حيلة صاحبك كانت: «" + (CHAL.trick || "؟") + "»." + cmp));
+      var cmp = S.won ? (S.moves < CHAL.moves ? T(" سبقته! 😎") : S.moves === CHAL.moves ? T(" تعادلتوا.") : T(" هو أسرع منك هالمرة.")) : "";
+      endCard.appendChild(el("p", "reveal", T("حيلة صاحبك كانت: «") + (CHAL.trick || "؟") + "»." + cmp));
       CHAL = null;
     }
     if (daily) {
@@ -1210,19 +1238,19 @@ function boot() {
       if (!dr) {
         lsSet("glitchrun_daily_" + DAILY_N, { won: S.won, moves: S.moves, stars: S.won ? S.stars : 0, grid: S.grid.slice(0, 20) });
         ev("daily_done");
-        endCard.appendChild(el("p", "miss", "هاي نتيجتك الرسمية لليوم. بكرا في تحدي جديد."));
-      } else endCard.appendChild(el("p", "miss", "نتيجتك الرسمية لليوم: " + (dr.won ? dr.moves + " حركة " + starStr(dr.stars) : "خسارة") + ". هاي جولة تدريب."));
+        endCard.appendChild(el("p", "miss", T("هاي نتيجتك الرسمية لليوم. بكرا في تحدي جديد.")));
+      } else endCard.appendChild(el("p", "miss", T("نتيجتك الرسمية لليوم: ") + (dr.won ? dr.moves + T(" حركة ") + starStr(dr.stars) : T("خسارة")) + T(". هاي جولة تدريب.")));
     }
     renderLevels();
     var row = el("div", "row");
     function btn(cls, text, fn) { var x = el("button", cls, text); x.type = "button"; x.addEventListener("click", fn); row.appendChild(x); return x; }
     if (S.won) {
-      btn(found() ? "btn-glitch" : "btn-fill", "شارك البطاقة", shareCard);
-      btn("btn-wa", "واتساب", waShare);
-      var lb = btn("btn-line", "نسخ النتيجة", function () { copyLink(lb); });
+      btn(found() ? "btn-glitch" : "btn-fill", T("شارك البطاقة"), shareCard);
+      btn("btn-wa", T("واتساب"), waShare);
+      var lb = btn("btn-line", T("نسخ النتيجة"), function () { copyLink(lb); });
     }
-    if (S.won && !daily && li < LEVELS.length - 1) btn("btn-fill", "المرحلة التالية", function () { li += 1; newRound(); });
-    btn(S.won ? "btn-line" : "btn-fill", S.won ? "إعادة المرحلة" : "يلا مرة تانية", newRound);
+    if (S.won && !daily && li < LEVELS.length - 1) btn("btn-fill", T("المرحلة التالية"), function () { li += 1; newRound(); });
+    btn(S.won ? "btn-line" : "btn-fill", S.won ? T("إعادة المرحلة") : T("يلا مرة تانية"), newRound);
     endCard.appendChild(row);
     scrim.hidden = false; endCard.hidden = false;
     cmd.disabled = true; sendBtn.disabled = true;
@@ -1247,19 +1275,19 @@ function boot() {
     var hit = bannedHit(t, banned);
     if (hit) {
       S.moves += 1; finalize(S); S.grid.push("⬛"); thinking.remove();
-      await addTurn(t, "لا لا لا، «" + hit + "» كلمة ممنوعة اليوم 🤐", [R("bad", "راحت عليك حركة.")]);
+      await addTurn(t, T("لا لا لا، «") + hit + T("» كلمة ممنوعة اليوم 🤐"), [R("bad", T("راحت عليك حركة."))]);
       beep(SND.bad); afterTurn(); return;
     }
     var actions = null, raw = [], story = "", judged = false;
     var cached = cacheGet(t);
     if (cached && Array.isArray(cached.actions)) {
-      raw = cached.actions; actions = sanitizeActions(li, raw, cached.scores); story = String(cached.story || "").slice(0, 320); judged = true; setNarr("السارد: محفوظ");
+      raw = cached.actions; actions = sanitizeActions(li, raw, cached.scores); story = String(cached.story || "").slice(0, 320); judged = true; setNarr(T("السارد: محفوظ"));
     } else if (serverOn && !runDead) {
       try {
         var rr = await serverTurn(t);
         if (rr) {
           raw = rr.actions || []; actions = sanitizeActions(li, raw, rr.scores || null); story = String(rr.story || "").slice(0, 320); judged = true;
-          setNarr(rr.cached ? "السارد: محفوظ" : ON);
+          setNarr(rr.cached ? T("السارد: محفوظ") : ON);
           cacheSet(t, { actions: raw.slice(0, 12), scores: rr.scores || null, story: story });
         } else setNarr(OFF, true);
       } catch (e) { runDead = true; setNarr(OFF, true); }
@@ -1271,10 +1299,10 @@ function boot() {
         var rn = apply(S, "none"); S.grid.push(GRID[rn.kind] || "🟥"); S.cmds.push({ t: t, g: false });
         await addTurn(t, story || lv.story.none, [rn]); beep(SND.bad); afterTurn(); return;
       }
-      await addTurn(t, story || "العالم ما ركب معو هالحكي. جرّب بطريقة تانية 🙃", [R("info", "ما انحسبت حركة.")]);
+      await addTurn(t, story || T("العالم ما ركب معو هالحكي. جرّب بطريقة تانية 🙃"), [R("info", T("ما انحسبت حركة."))]);
       afterTurn(); return;
     }
-    if (!story || !judged) story = actions.map(function (a) { return lv.story[a] || (lv.novel && lv.novel[a] ? lv.novel[a].name : lv.story.none); }).join(" وبعدها ");
+    if (!story || !judged) story = actions.map(function (a) { return lv.story[a] || (lv.novel && lv.novel[a] ? lv.novel[a].name : lv.story.none); }).join(T(" وبعدها "));
     var results = [], before = S.found.length, r2, bad = false;
     for (var i = 0; i < actions.length && !S.over; i++) {
       r2 = lv.novel && lv.novel[actions[i]] ? applyNovel(S, actions[i]) : apply(S, actions[i]);
@@ -1301,16 +1329,16 @@ function boot() {
   hintBtn.addEventListener("click", function () {
     if (S.over) return;
     var hints = LEVELS[li].hints, d = el("div", "turn"), box = el("div", "chips-out"); d.appendChild(box);
-    if (hintN >= hints.length) box.appendChild(el("span", "chip info", "خلصت التلميحات. الباقي عليك."));
+    if (hintN >= hints.length) box.appendChild(el("span", "chip info", T("خلصت التلميحات. الباقي عليك.")));
     else if (hintN === 0) {
-      box.appendChild(el("span", "chip info", "💡 تلميح ببلاش: " + hints[0] + " (باقي " + (Object.keys(LEVELS[li].glitches).length - patchedCount(li, S.patched)) + " ثغرات مخفية)"));
+      box.appendChild(el("span", "chip info", T("💡 تلميح ببلاش: ") + hints[0] + T(" (باقي ") + (Object.keys(LEVELS[li].glitches).length - patchedCount(li, S.patched)) + T(" ثغرات مخفية)")));
       hintN = 1; beep(SND.light); ev("hint");
     } else if (LG.n < 1) {
-      box.appendChild(el("span", "chip info", "ما عندك لمبة 💡. كل ثغرة بتلاقيها بتعطيك لمبة."));
+      box.appendChild(el("span", "chip info", T("ما عندك لمبة 💡. كل ثغرة بتلاقيها بتعطيك لمبة.")));
       pulse($("lights")); beep(SND.bad);
     } else {
       LG.n -= 1; lsSet("glitchrun_lights", LG);
-      box.appendChild(el("span", "chip info", "💡 تلميح: " + hints[hintN]));
+      box.appendChild(el("span", "chip info", T("💡 تلميح: ") + hints[hintN]));
       hintN += 1; beep(SND.light); pulse($("lights")); ev("hint");
     }
     logEl.appendChild(d); updateHUD(); toBottom();
